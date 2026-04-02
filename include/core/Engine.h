@@ -8,14 +8,16 @@
 #define ENGINE_H
 #define WINTHER_API
 
-
 #include "Log.h"
-#include "Client.h"
 #include <SDL3/SDL_gpu.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL.h>
 #include <string>
-#include <EntityManager.h>
+#include "entity/EntityManager.h"
+#include <GL/glew.h>
+#include <GL/glu.h>
+#include <graphics/TextureManager.h>
+
 
 namespace Winther
 {
@@ -24,9 +26,10 @@ namespace Winther
 	class Engine
 	{
 	public:
-		Engine();
 
-		static Engine* CreateApp();
+		static Engine* GetInstance();
+
+//		static Engine* CreateClient();
 
 		void Run();
 
@@ -50,17 +53,19 @@ namespace Winther
 
 		inline bool IsRunning();
 
-		inline SDL_Renderer* GetRenderer();
+		SDL_Renderer* GetRenderer();
 
-
-		~Engine();
+		bool RenderStaticEntities(const std::string&& filename);
 
 		void LoadEntities();
 
+		~Engine();
+
 	private:
+		Engine(){};
+		static Engine* s_INSTANCE;
 		SDL_DisplayMode* m_DisplayMode;
 		SDL_GPUDevice* m_Device;
-		SDL_Event* m_Event;
 		SDL_Renderer* m_Renderer;
 		SDL_Window* m_Window;
 		EntityManager m_EntityManager;
@@ -69,19 +74,24 @@ namespace Winther
 
 
 		void HandleInputs();
-	};
-
-	class Client : public Engine
-	{
-	public:
-
-		Client();
-
-		~Client() = default;
-
-	private:
 
 	};
+
+//	class Client : public Engine
+//	{
+//	public:
+//		static Client* GetInstance();
+//
+//
+//
+//	private:
+//		static Client* s_INSTANCE;
+//
+//		Client();
+//
+//		~Client() = default;
+//
+//	};
 
 } // Winther
 

@@ -7,6 +7,8 @@
 
 
 #include <string>
+#include <component/Component.h>
+#include <map>
 
 namespace Winther
 {
@@ -14,12 +16,21 @@ namespace Winther
 	class Entity
 	{
 	public:
-		Entity(size_t id, const std::string& name);
+
+		Entity(size_t id, std::string tag);
+
+		const std::string&& GetTag();
+
+		size_t GetId();
+
+		bool Exists();
+
+		~Entity();
 
 	private:
 
 		const size_t m_Id;
-		const std::string m_Name;
+		const std::string m_Tag;
 		bool m_Exists;
 
 	};

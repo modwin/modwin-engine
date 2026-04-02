@@ -13,6 +13,11 @@ namespace Winther
 
 	class TextureManager
 	{
+	private:
+
+
+	public:
+
 		TextureManager() = default;
 
 		bool Load(std::string id, std::string filename);

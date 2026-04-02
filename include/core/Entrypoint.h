@@ -10,7 +10,7 @@
 #define CPROG_WINTHER_ENGINE_ENTRYPOINT_H
 
 
-#include <Engine.h>
+#include "core/Engine.h"
 
 namespace Winther
 {

@@ -8,6 +8,7 @@
 #include "spdlog/sinks/ansicolor_sink.h"
 #include <string>
 
+
 namespace Winther
 {
 
