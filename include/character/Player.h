@@ -28,7 +28,7 @@ namespace Modwin{
 			m_Transform = new Transform(340, 256);
 
 		};
-		virtual ~Player(){};
+		~Player() override {};
 		void Draw() override;
 		void Update(float dt) override;
 		bool IsWalkingLeft() const;
