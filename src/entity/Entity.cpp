@@ -9,7 +9,7 @@
 namespace Modwin
 {
 
-	Entity::Entity(std::string  tag, const size_t id, const Properties& properties) : m_RigidBody(new RigidBody), m_Animation(new Animation),
+	Entity::Entity(std::string  tag, const size_t id, const Properties& properties) : m_RigidBody(nullptr), m_Animation(nullptr),
 	                                                                     m_Transform(new Transform(properties.x,
 		                                                                     properties.y)),
 	                                                                     m_Properties(properties), m_TextureID(properties.m_TextureID),
