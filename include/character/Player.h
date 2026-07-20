@@ -36,8 +36,6 @@ namespace Modwin{
 
 
 		Config* m_Config;
-		const std::string m_Tag;
-	public:
 	};
 
 }
