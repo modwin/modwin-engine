@@ -80,7 +80,6 @@ namespace Modwin
 
 		m_Window = SDL_CreateWindow("Modwin engine", 1280, 720,
 				SDL_WINDOW_RESIZABLE);
-		SDL_SetRenderVSync(m_Renderer, 1);
 		auto context = SDL_GL_CreateContext(m_Window);
 
 		if (!m_Window)
@@ -90,6 +89,7 @@ namespace Modwin
 		}
 
 		m_Renderer = SDL_CreateRenderer(m_Window, nullptr);
+		SDL_SetRenderVSync(m_Renderer, 1);
 
 		if (!m_Renderer)
 		{
