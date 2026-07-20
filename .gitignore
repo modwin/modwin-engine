@@ -41,3 +41,4 @@ cmake_modules/**.cmake
 /lib/imgui/imstb_rectpack.h
 /lib/imgui/imstb_textedit.h
 /lib/imgui/imstb_truetype.h
+.idea
