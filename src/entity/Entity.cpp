@@ -9,9 +9,17 @@
 namespace Modwin
 {
 
-	Entity::Entity(std::string  tag, size_t id, Properties properties): m_Tag(std::move(tag)), m_Id(id), m_Exists(true), m_Transform(new Transform(properties.x, properties.y)), m_TextureID(properties.m_TextureID), m_Properties(properties){}
+	Entity::Entity(std::string  tag, const size_t id, const Properties& properties) : m_RigidBody(new RigidBody), m_Animation(new Animation),
+	                                                                     m_Transform(new Transform(properties.x,
+		                                                                     properties.y)),
+	                                                                     m_Properties(properties), m_TextureID(properties.m_TextureID),
+	                                                                     m_Id(id),
+	                                                                     m_Tag(std::move(tag)),
+	                                                                     m_Exists(true)
+	{
+	}
 
-	Entity::Entity(const Entity& other) : m_Id(other.m_Id), m_TextureID(other.m_TextureID), m_Properties(other.m_Properties)
+	Entity::Entity(const Entity& other) : m_Properties(other.m_Properties), m_TextureID(other.m_TextureID), m_Id(other.m_Id), m_Tag(other.m_Tag)
 	{
 		m_Animation = other.m_Animation;
 		m_Exists = true;
@@ -53,12 +61,12 @@ namespace Modwin
 		return const_cast<std::string&&>(m_Tag);
 	}
 
-	size_t Entity::GetId()
+	size_t Entity::GetId() const
 	{
 		return m_Id;
 	}
 
-	bool Entity::Exists()
+	bool Entity::Exists() const
 	{
 		return m_Exists;
 	}

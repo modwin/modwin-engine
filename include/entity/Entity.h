@@ -53,7 +53,7 @@ namespace Modwin
 	class Entity
 	{
 		public:
-			Entity(std::string tag, size_t id, Properties properties);
+			Entity(std::string tag, size_t id, const Properties& properties);
 
 			Entity(const Entity& other);
 
@@ -65,9 +65,9 @@ namespace Modwin
 
 			void Clean();
 
-			size_t GetId();
+			size_t GetId() const;
 
-			bool Exists();
+			bool Exists() const;
 
 			~Entity();
 
