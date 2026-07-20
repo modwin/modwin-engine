@@ -10,7 +10,10 @@ namespace Winther
 
 	class Physics
 	{
+	private:
+			float m_X, m_Y;
 
+	public:
 	};
 
 } // Winther

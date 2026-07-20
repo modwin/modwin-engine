@@ -2,36 +2,65 @@
 // Created by komvu on 2024-12-19.
 //
 
-#include "EntityManager.h"
+#include "entity/EntityManager.h"
+#include "character/Player.h"
 
 namespace Winther
 {
-	std::shared_ptr<Entity> EntityManager::addEntity(const std::string& tag)
+
+	EntityManager* EntityManager::s_INSTANCE = nullptr;
+
+	EntityManager* EntityManager::GetInstance()
 	{
-		return std::shared_ptr<Entity>();
+		if (s_INSTANCE == nullptr)
+		{
+			s_INSTANCE = new EntityManager();
+		}
+		return s_INSTANCE;
 	}
 
-	EntityManager::~EntityManager()
+	std::shared_ptr<Entity> EntityManager::addEntity(const std::string& tag, Properties properties)
 	{
-
-	}
-
-	EntityManager::EntityManager()
-	{
-
+		if(tag == "player")
+		{
+			SDL_Log("Properties H = %d", properties.h);
+			auto p = std::make_shared<Player>(tag, ++m_entityCount, properties);
+			SDL_Log("Player height = %d", p->m_Properties.h);
+			m_Entities.push_back(static_cast<std::shared_ptr<Entity>>(p));
+			return p;
+		}
+		else {
+			auto e = std::make_shared<Entity>(tag, ++m_entityCount, properties);
+			m_Entities.push_back(e);
+			return e;
+		}
+		return nullptr;
 	}
 
 	/*
 	 * Updates the state of all Entities before each
 	 * frame has been rendered in order to ensure safe
-	 * iteration of m_entities.
+	 * iteration of m_Entities.
 	 */
 
-	void EntityManager::Update()
+	void EntityManager::Update(float deltaTime)
 	{
-
+		for(const auto& e : m_Entities)
+		{
+			e->Update(deltaTime);
+		}
+//		CalculateGravity();
+//		CalculatePosition();
 	}
 
+	void EntityManager::Draw()
+	{
+		for(const auto& e : m_Entities)
+		{
+			e->Draw();
+		}
+
+	}
 
 
 	/*
@@ -46,7 +75,7 @@ namespace Winther
 
 	EntityVector& EntityManager::GetEntities()
 	{
-		return m_entities;
+		return m_Entities;
 	}
 
 	const EntityVector& EntityManager::GetStaticEntities()
@@ -55,8 +84,20 @@ namespace Winther
 
 	}
 
-	EntityVector& EntityManager::GetEntityWithComponent(const std::string& cTag)
+	void EntityManager::Clean()
 	{
-		return m_entityComponentMap.at(cTag);
+		for(auto e : m_Entities)
+		{
+			e->Clean();
+			e = nullptr;
+		}
+
 	}
+
+	EntityManager::~EntityManager()
+	{
+		delete this;
+	}
+
+
 } // Winther

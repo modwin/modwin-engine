@@ -4,8 +4,10 @@
 
 #ifndef WINTHER_ENGINE_PLAYER_H
 #define WINTHER_ENGINE_PLAYER_H
-#include <character/Character.h>
+#include "Character.h"
 #include <SDL3/SDL.h>
+#include <physics/RigidBody.h>
+#include <input/InputHandler.h>
 
 
 
@@ -15,28 +17,27 @@ namespace Winther{
 	{
 	public:
 
-		Player(std::string tag, size_t id, Properties* properties) : Character(std::move(tag), id, properties), m_Tag(tag)
+		Player(std::string tag, size_t id, Properties properties) : Character(std::move(tag), id, properties)
 		{
+			m_Config = new Config;
 			m_Properties = properties;
 			m_Animation = new Animation();
-			m_Animation->SetProperties(properties->m_TextureID, 3, 9, 80, properties->flipMode);
-			m_Exists = true;
-			m_Id = id;
+			m_Animation->SetValues(properties.m_TextureID, 2, 2, 120, properties.flipMode);
+			m_RigidBody = new RigidBody();
+			m_RigidBody->ApplyFriction({0, 0});
+			m_Transform = new Transform(340, 256);
+
 		};
-		void Update(float dt);
-		void Draw();
+		virtual ~Player(){};
+		void Draw() override;
+		void Update(float dt) override;
+		bool IsWalkingLeft() const;
+		bool IsWalkingRight() const;
 
-		~Player();
-		Properties* m_Properties;
-		Animation* m_Animation;
-		size_t m_Id;
+
+		Config* m_Config;
 		const std::string m_Tag;
-		bool m_Exists;
-
-
-	private:
-
-
+	public:
 	};
 
 }

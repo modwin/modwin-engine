@@ -2,13 +2,8 @@
 // Created by komvu on 2024-12-06.
 //
 
-#ifndef CLIENT_CPP
 
-#define CLIENT_CPP
 #include "core/Engine.h"
-
-	#ifdef ENGINE_H
-		#ifdef WINTHER_ENGINE_TEXTUREMANAGER_H
 
 namespace Winther
 {
@@ -20,19 +15,14 @@ namespace Winther
 
 	int main(int argc, char** argv)
 	{
-		auto client = Engine::GetInstance();
 
-		client->Init();
-		client->InitImgui();
-		client->Run();
-		client->Quit();
+		Engine::GetInstance()->Init();
+		Engine::GetInstance()->Run();
+		Engine::GetInstance()->Quit();
 
 		SDL_Quit();
 		return 0;
 	};
 }
 
-		#endif
-	#endif
-#endif // CLIENT_CPP
 

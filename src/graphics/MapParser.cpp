@@ -2,30 +2,40 @@
 // Created by komvu on 2025-01-04.
 //
 
-#include "MapParser.h"
+#include "graphics/MapParser.h"
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <istream>
-#include <Log.h>
+#include "Log.h"
+
 namespace Winther
 {
 
-	MapParser* MapParser::s_INSTANCE;
+	MapParser* MapParser::s_INSTANCE = nullptr;
 
 	MapParser* Winther::MapParser::GetInstance()
 	{
-		s_INSTANCE = new MapParser();
+		if(s_INSTANCE == nullptr)
+		{
+			s_INSTANCE = new MapParser();
+		}
+		return s_INSTANCE;
 	}
 
 	void MapParser::Clean()
 	{
-
+		std::map<std::string, TileMap*>::iterator iter;
+		for(iter = m_Map.begin(); iter != m_Map.end(); iter++)
+		{
+			iter->second = nullptr;
+		}
+		m_Map.clear();
 	}
 
-	bool MapParser::Load()
+	bool MapParser::LoadMap(const std::string& id, const std::string& fileName)
 	{
-		return Parse("1", "resources/maps/map.tmx");
+		return Parse("1", std::string("C:/Users/komvu/CLionProject/winther-engine/resources/maps/map.tmx"));
 	}
 
 	/**
@@ -43,82 +53,108 @@ namespace Winther
 		}
 
 		tinyxml2::XMLElement* rootElement =xmlDocument.RootElement();
+		if(rootElement == nullptr)
+		{
+			Log::GetCoreLogger()->info("MapParser: rootElement was null.");
+			return false;
+		}
 		int rowCount, columnCount, tileWidth = 0;
 
 		// Hämtar attributen av varje element i XML-filen som behövs för
 		// att rendera texturerna.
-		rootElement->IntAttribute("width", columnCount);
-		rootElement->IntAttribute("height", rowCount);
-		rootElement->IntAttribute("tilewidth", tileWidth);
+		columnCount = rootElement->FindAttribute("width")->IntValue();
+		rowCount = rootElement->FindAttribute("height")->IntValue();
+		tileWidth = rootElement->FindAttribute("tilewidth")->IntValue();
 
 		TilesetVec tilesets;
-		for(tinyxml2::XMLElement* e = rootElement->FirstChildElement(); e!= nullptr; e = rootElement->NextSiblingElement())
+		TilesetVec tilesets1;
+		tinyxml2::XMLElement* e = rootElement->FirstChildElement();
+
+		while(e)
 		{
 			if(e->Value() == std::string("tileset"))
 			{
-				tilesets.push_back(ParseTileSet(e));
+				tilesets1.push_back(ParseTileSet(e));
 			}
+			e = e->NextSiblingElement();
 		}
+//		for(tinyxml2::XMLElement* e = rootElement->FirstChildElement(); e!= nullptr; e = rootElement->NextSiblingElement())
+//		{
+//			if(e->Value() == std::string("tileset"))
+//			{
+//				tilesets.push_back(ParseTileSet(e));
+//			}
+//		}
 
 		auto* tileMap = new TileMap();
-		for(tinyxml2::XMLElement* e = rootElement->FirstChildElement(); e!= nullptr; e = rootElement->NextSiblingElement())
+		TileLayer* tileLayer = nullptr;
+		e = rootElement->FirstChildElement();
+		while(e)
 		{
 			if(e->Value() == std::string("layer"))
 			{
-				TileLayer* tileLayer = ParseTileLayer(e, tilesets, tileWidth, rowCount, columnCount);
-				tileMap->GetSurfaceLayers().push_back(tileLayer);
+				tileLayer = ParseTileLayer(e, tilesets1, tileWidth, rowCount, columnCount);
+				tileMap->m_SurfaceLayers.push_back(tileLayer);
 			}
+			e = e->NextSiblingElement();
 		}
 
-		m_TileMaps[id] = tileMap;
-		return false;
+		if(tileMap->m_SurfaceLayers.empty())
+		{
+			Log::GetCoreLogger()->info("SurfaceLayers<vec> är tom!");
+//			return false;
+		}
+
+		m_Map[id] = tileMap;
+		if(m_Map[id] == nullptr)
+		{
+			std::cout << "Map is null!" << std::endl;
+			return false;
+		}
+		return true;
 	}
 
 	Tileset MapParser::ParseTileSet(tinyxml2::XMLElement* tilesetElement)
 	{
 		Tileset tileset;
-		tileset.name = tilesetElement->Attribute("name");
-		tilesetElement->IntAttribute("firstgid", tileset.firstId);
+		tileset.name = tilesetElement->FindAttribute("name")->Value();
+		tileset.firstId = tilesetElement->FindAttribute("firstgid")->IntValue();
 
-		tilesetElement->IntAttribute("tilecount", tileset.tileCount);
-//		char* value =
+		tileset.tileCount = tilesetElement->FindAttribute("tilecount")->IntValue();
 		tileset.lastId = (tileset.firstId - tileset.tileCount) - 1;
-		std::cout << "tileSet.lastId = "<< tileset.lastId << std::endl << "aritmetiska funktionens resultat med char* = " << (tileset.firstId - tileset.tileCount) - 1 << std::endl;
-
-		tilesetElement->IntAttribute("columns", tileset.columnCount);
+		tileset.columnCount = tilesetElement->FindAttribute("columns")->IntValue();
 		tileset.rowCount = (tileset.tileCount) / tileset.columnCount;
-		tilesetElement->IntAttribute("tilewidth", tileset.tileWidth);
+		tileset.tileWidth = tilesetElement->FindAttribute("tilewidth")->IntValue();
 
-		tileset.source = tilesetElement->FirstChildElement()->Attribute("source");
+		tileset.source = tilesetElement->FirstChildElement()->FindAttribute("source")->Value();
 		return tileset;
+
 	}
 
 	TileLayer*
 	MapParser::ParseTileLayer(tinyxml2::XMLElement* layerElement,
 			const TilesetVec& tilesetVec, int tileWidth, int rowCount,int columnCount)
 	{
-		tinyxml2::XMLElement* dataElement;
-		tinyxml2::XMLNode* dataNode = layerElement->FirstChildElement()->NextSibling() ;
-		for(int i = 0; i < layerElement->ChildElementCount();i++)
+		tinyxml2::XMLElement* data = layerElement->FirstChildElement();
+		while(data)
 		{
-			if(dataElement != nullptr && std::string("data") == dataElement->Value())
+			if(data->Value() == std::string("data"))
 			{
-				std::cout << "HITTADE ELEMENTET 'data'" << std::endl;
 				break;
 			}
-			layerElement->NextSibling();
-
+			data = data->NextSiblingElement();
 		}
-		if(dataElement == nullptr)
+
+		if(data == nullptr)
 		{
 			return nullptr;
 		}
 
-		std::string matrix(dataElement->GetText());
+		std::string matrix(data->GetText());
 		std::istringstream iss(matrix);
 		std::string id;
 
-		TileVec tileVec(rowCount, std::vector<int>(columnCount, 0));
+		TileVec2D tileVec(rowCount, std::vector<int>(columnCount, 0));
 
 		for(int row = 0; row < rowCount; row++)
 		{

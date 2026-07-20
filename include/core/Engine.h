@@ -14,9 +14,20 @@
 #include <SDL3/SDL.h>
 #include <string>
 #include "entity/EntityManager.h"
-#include <GL/glew.h>
 #include <GL/glu.h>
-#include <graphics/TextureManager.h>
+#include "graphics/TextureManager.h"
+#include <physics/Transform.h>
+#include "character/Player.h"
+#include <imgui.h>
+#include <imgui_impl_sdlrenderer3.h>
+#include <imgui_impl_sdl3.h>
+#include <SDL3/SDL_timer.h>
+#include <physics/RigidBody.h>
+#include <character/Character.h>
+#include <entity/Entity.h>
+#include <input/InputHandler.h>
+#include <graphics/MapParser.h>
+#include <graphics/TileMap.h>
 
 
 namespace Winther
@@ -25,73 +36,60 @@ namespace Winther
 
 	class Engine
 	{
-	public:
+		public:
 
-		static Engine* GetInstance();
+			inline Engine(const Engine&) = delete;
 
-//		static Engine* CreateClient();
+			inline Engine& operator=(const Engine&) = delete;
 
-		void Run();
+			inline static Engine* GetInstance()
+			{
+				if (s_INSTANCE == nullptr)
+				{
+					s_INSTANCE = new Engine();
+				}
 
-		bool Init();
+				return s_INSTANCE;
+			}
 
-		bool InitWindowAndRenderer(int& w, int& h);
+			void Run();
 
-		bool InitDevice();
+			bool Init();
 
-		bool InitSDL();
+			bool InitImgui();
 
-		bool InitDisplay(int& w, int& h);
+			void Quit();
 
-		void Quit();
+			void Render();
 
-		void Render();
+			bool EventListener();
 
-		void EventListener();
+			inline bool IsRunning();
 
-		void Read();
+			SDL_Renderer* GetRenderer();
 
-		inline bool IsRunning();
+//			bool RenderStaticEntities(const std::string&& filename);
 
-		SDL_Renderer* GetRenderer();
+			void LoadResources();
 
-		bool RenderStaticEntities(const std::string&& filename);
+			void Update();
 
-		void LoadEntities();
+			~Engine();
 
-		~Engine();
-
-	private:
-		Engine(){};
-		static Engine* s_INSTANCE;
-		SDL_DisplayMode* m_DisplayMode;
-		SDL_GPUDevice* m_Device;
-		SDL_Renderer* m_Renderer;
-		SDL_Window* m_Window;
-		EntityManager m_EntityManager;
-		bool m_IsRunning;
-		int* m_Data;
+		private:
+			Engine(){};
+			static Engine* s_INSTANCE;
+			SDL_GPUDevice* m_Device;
+			SDL_Renderer* m_Renderer;
+			SDL_Window* m_Window;
+			TileMap* m_CurrentLevel;
+			bool m_IsRunning;
+			int* m_Data;
 
 
-		void HandleInputs();
 
 	};
 
-//	class Client : public Engine
-//	{
-//	public:
-//		static Client* GetInstance();
-//
-//
-//
-//	private:
-//		static Client* s_INSTANCE;
-//
-//		Client();
-//
-//		~Client() = default;
-//
-//	};
 
 } // Winther
 

@@ -68,8 +68,8 @@ namespace Winther
 			return;
 		}
 
-//		m_Transform->TranslateX(m_RigidBody->GetPosition().X);
-//		m_Transform->TranlateY(m_RigidBody->GetPosition().Y);
+//		m_Transform->TranslateX(m_RigidBody->GetPosition().x);
+//		m_Transform->TranlateY(m_RigidBody->GetPosition().y);
 //		m_Animation->Update();
 //		m_RigidBody->Update(deltaTime);
 	}
@@ -81,11 +81,10 @@ namespace Winther
 //	};
 	void Player::Draw()
 	{
-		if (m_Exists && m_Animation != nullptr)
+//		SDL_Log("Player is being drawn with properties X = %f Y = %f texture = %s, source = %s , H = %d, W = %d", m_Properties.x, m_Properties.y, m_TextureID.c_str(), m_Properties.m_Source.c_str(), m_Properties.h, m_Properties.w );
+		if (m_Exists)
 		{
-
-//			std::cout << "GetAcceleration X = " << m_RigidBody->GetAcceleration().X << "\nGetAcceleration Y = " << m_RigidBody->GetAcceleration().Y << std::endl;
-			m_Animation->Draw(m_Transform->GetX(), m_Transform->GetY(), m_Properties->w, m_Properties->h);
+			m_Animation->Draw(m_Transform->GetX(), m_Transform->GetY(), m_Properties.w, m_Properties.h);
 		}
 	}
 

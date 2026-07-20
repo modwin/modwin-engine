@@ -10,6 +10,14 @@ namespace Winther
 
 	class SurfaceLayer
 	{
+	public:
+		SurfaceLayer(){};
+		~SurfaceLayer(){};
+
+		virtual void Update()=0;
+		virtual void Render()=0;
+
+	private:
 
 	};
 

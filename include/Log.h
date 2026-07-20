@@ -1,17 +1,13 @@
 //
 // Created by komvu on 2024-12-10.
 //
-#pragma once
 
-#include "Engine.h"
+#ifndef WINTHER_ENGINE_LOG_H
+#define WINTHER_ENGINE_LOG_H
+
+#include "core/Engine.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include <spdlog/logger.h>
-
-
-#ifdef ENGINE_H
-
-#ifndef WINTHER_API_LOG_H
-#define WINTHER_API_LOG_H
 
 namespace Winther
 {
@@ -48,7 +44,5 @@ namespace Winther
 
 } // Winther
 
-#endif //WINTHER_API_LOG_H
-
-#endif //ENGINE_H
+#endif
 

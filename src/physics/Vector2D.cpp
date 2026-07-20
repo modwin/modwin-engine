@@ -2,17 +2,11 @@
 // Created by komvu on 2024-12-27.
 //
 
-#include "component/Vector2D.h"
+#include "physics/Vector2D.h"
+#include <iostream>
 
 namespace Winther
 {
-	Vector2D::Vector2D(double x, double y): m_X(x), m_Y(y){};
-
-	Vector2D::~Vector2D()
-	{
-		m_X = 0;
-		m_Y = 0;
-	}
 
 	double Vector2D::Length()
 	{
@@ -24,14 +18,14 @@ namespace Winther
 
 	}
 
-	bool Vector2D::operator==(const Vector2D& other) const
+	void Vector2D::Log()
 	{
-		return m_X == other.m_X && m_Y == other.m_Y;
+		std::cout << "Vector2D = {x = " << X << ", y = " << Y << "}" << std::endl;
 	}
 
-	bool Vector2D::operator!=(const Vector2D& other) const
+	Vector2D::~Vector2D()
 	{
-		return m_X != other.m_X && m_Y != other.m_Y;
+
 	}
 
 

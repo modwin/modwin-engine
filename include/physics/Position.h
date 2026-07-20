@@ -5,4 +5,13 @@
 #ifndef WINTHER_ENGINE_POSITION_H
 #define WINTHER_ENGINE_POSITION_H
 
+namespace Winther{
+
+	class Position {
+
+	};
+}
+
 #endif //WINTHER_ENGINE_POSITION_H
+
+

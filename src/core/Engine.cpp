@@ -1,21 +1,19 @@
 //
 // Created by komvu on 2024-12-06.
 //
-//#define TINYOBJLOADER_IMPLEMENTATION
 
-#include "Engine.h"
+#include "core/Engine.h"
 
-#ifdef ENGINE_H
 
 #include <iostream>
 #include <SDL3_image/SDL_image.h>
 #include <vector>
-//#include <tiny_obj_loader.h>
+#include <time/Time.h>
 
 
+const char* SDL_HINT_IME_SHOW_UI;
 namespace Winther
 {
-//	Engine* Engine::GetInstance()
 	Engine* Engine::s_INSTANCE = nullptr;
 
 	SDL_Renderer* Engine::GetRenderer()
@@ -34,43 +32,44 @@ namespace Winther
 
 
 	/*
-	* Initializes the game engine...
-	*/
+	 * Initializes the necessary elements of the game engine.
+	 */
+
 	bool Engine::Init()
 	{
-
-		RenderStaticEntities("StaticEntities.json");
 		Log::Init();
+
+		SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
 			Winther::Log::GetCoreLogger()->info("SDL_Init error...");
-			SDL_Log("SDL_Log = SDL_Init error. /n Error: {0}", SDL_GetError());
+			SDL_Log("SDL_Log = SDL_Init error.\nError: %s", SDL_GetError());
 			return false;
 		}
-		// Logs result of Init()
-		Winther::Log::GetCoreLogger()->info("SDL Initialized correctly.");
 
-		m_Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL, true, NULL);
+
+		m_Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL, true, nullptr);
 
 		if (!m_Device)
 		{
-			Log::GetCoreLogger()->info("Failed to initialize GPU device. /n Error: {0}", SDL_GetError());
+			Log::GetCoreLogger()->info("Failed to initialize GPU device.\nError: {0}", SDL_GetError());
 		}
 		else
 		{
-			Log::GetCoreLogger()->info("GPU device was successfully initialized./nGPU device drivers = {0}",
+			Log::GetCoreLogger()->info("GPU device was successfully initialized.\nGPU device drivers = {0}",
 					SDL_GetGPUDeviceDriver(m_Device));
 		}
 
 
-		int w = 1280;
-		int h = 720;
+		int w = 1920;
+		int h = 1080;
 
 		const SDL_DisplayMode* display = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
 		if (display == nullptr)
 		{
 			Log::GetCoreLogger()->info(
-					"Failed to retrieve primary display resolution. Setting window resolution to 720p. /n Error: {0}",
+					"Failed to retrieve primary display resolution. Setting window resolution to 720p. \nError: {0}",
 					SDL_GetError());
 		}
 		else
@@ -79,245 +78,198 @@ namespace Winther
 			h = display->h;
 		}
 
-		m_Window = SDL_CreateWindow("Winther engine", 1920, 1080, SDL_WINDOW_OPENGL | SDL_WINDOW_FULLSCREEN);
+		m_Window = SDL_CreateWindow("Winther engine", 1280, 720,
+				SDL_WINDOW_RESIZABLE);
+		SDL_SetRenderVSync(m_Renderer, 1);
+		auto context = SDL_GL_CreateContext(m_Window);
+
 		if (!m_Window)
 		{
-			Log::GetCoreLogger()->info("Failed to initialize window. /n Error: {0}", SDL_GetError());
+			Log::GetCoreLogger()->info("Failed to initialize window.\nError: {0}", SDL_GetError());
 			return false;
 		}
+
 		m_Renderer = SDL_CreateRenderer(m_Window, nullptr);
-//		SDL_CreateWindowAndRenderer("Winther Engine", w, h, 0, &m_Window, &m_Renderer)
+
 		if (!m_Renderer)
 		{
-			Log::GetCoreLogger()->info("Failed to initialize renderer. /n Error: {0}", SDL_GetError());
+			Log::GetCoreLogger()->info("Failed to initialize renderer.\nError: {0}", SDL_GetError());
 			return false;
 		}
+
+		//
+		// Creates a swap chain in order for the GPU to make use
+		// of frame buffering for graphics stabilization.
+		//
 
 
 		if (!SDL_ClaimWindowForGPUDevice(m_Device, m_Window))
 		{
 			Log::GetCoreLogger()->info("Failed to claim window for GPU device. {}", SDL_GetError());
+			return false;
 		}
 
-//		SDL_SetWindowSurfaceVSync(m_Window, SDL_WINDOW_SURFACE_VSYNC_ADAPTIVE);
+		// Logs result of Init()
+		Winther::Log::GetCoreLogger()->info("SDL Initialized correctly.");
+
+		if (!InitImgui())
+		{
+			Log::GetCoreLogger()->info("Failed to initialize ImGui.");
+			return false;
+		}
+
+		LoadResources();
 
 		return m_IsRunning = true;
 
 	}
 
-	// Main game loop.
+	bool Engine::InitImgui()
+	{
+		std::cout << IMGUI_CHECKVERSION() << std::endl;
+		bool error = ImGui::CreateContext();
+
+		ImGuiIO& guiIo = ImGui::GetIO();
+		guiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		(void)guiIo;
+		SDL_Window* w = SDL_CreatePopupWindow(m_Window, 200, 200, 1920, 1080, SDL_WINDOW_RESIZABLE);
+		SDL_ShowWindow;
+
+		error = ImGui_ImplSDL3_InitForSDLRenderer(w, m_Renderer);
+		error = ImGui_ImplSDLRenderer3_Init(m_Renderer);
+
+
+		return error;
+	}
+
+
+	/*
+		Main game loop.
+	 		Listen for events ->
+	 		Render textures based on those events ->
+	 		Update the state of entities and animations based on tick rate ->
+			refresh tick rate.
+	 */
 	void Engine::Run()
 	{
-//		SDL_GLContext gl = SDL_GL_CreateContext(m_Window);
-//		SDL_GL_SetSwapInterval(1);
-//
-//		glewExperimental = true;
-//		glewInit();
-//
-//		tinyobj::attrib_t attr;
-//		std::vector<tinyobj::shape_t> shapes;
-//		std::vector<tinyobj::material_t> materials;
-//		std::string warn, err;
-//		tinyobj::ObjReader reader;
-//		tinyobj::ObjReaderConfig reader_config;
-//		reader_config.mtl_search_path = "./";
-
-
-//		ParseFromFile("Residential_Buildings_001.obj", reader_config);
-//		if(!reader.Warning().empty())
-//			std::cerr << reader.Warning() << std::endl;
-//
-//		if(!reader.Error().empty())
-//			std::cerr << reader.Error() << std::endl;
-//
-//
-//		if(!ret)
-//			exit(1);
 		while (m_IsRunning)
 		{
-			Render();
-			EventListener();
-			m_EntityManager.Update();
-//			SDL_SetRenderDrawColor(m_Renderer, 0xFF, 0x00, 0x00, 0x10);
-		}
-	}
-
-	/*
-	 *  Quits safely
-	 */
-
-	void Engine::Quit()
-	{
-		m_IsRunning = false;
-		TextureManager::GetInstance()->Clean();
-		Engine::~Engine();
-	}
-
-	/*
-	 *  Listens to events
-	 */
-
-	void Engine::EventListener()
-	{
-		int counter = 0;
-		SDL_Event event;
-		if (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_EVENT_QUIT)
+			m_IsRunning = EventListener();
+			if(m_IsRunning)
 			{
-				Quit();
+
+				Update();
+				Render();
+
+
+				// Calculates the tick rate for the next delta time value for consistent rendering.
+//				ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
+				Time::GetInstance()->CalculateTickRate();
+
 			}
-//			if (event.type == SDL_EVENT_MOUSE_MOTION)
-//			{
-//				SDL_SetRenderDrawColorFloat(m_Renderer, event.motion.x / 1000, event.motion.y / 1000,
-//						event.motion.y / 1000, event.motion.x / 1000);
-//			}
-//			if (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-//			{
-
-//				SDL_RenderClear(m_Renderer);
-//				SDL_Surface* surface = SDL_GetWindowSurface(m_Window);
-//				surface = IMG_Load("C:/Users/komvu/CLionProject/winther-engine/resources/textures/building03_c.tga");
-//
-//
-//				if(surface == nullptr)
-//					SDL_Log("Error: %s", SDL_GetError());
-//
-////				auto texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
-
-//				if(SDL_SetRenderTarget(m_Renderer,texture))
-//					SDL_Log("Error: %s", SDL_GetError());
-
-
-//				if(!SDL_RenderTexture(m_Renderer, texture, nullptr, nullptr))
-//					SDL_Log("Error: %s", SDL_GetError());
-
-//				if (!SDL_UpdateWindowSurface(m_Window))
-//				{
-//					SDL_Log("Error: %s", SDL_GetError());
-//				}
-//
-//				SDL_SetRenderTarget(m_Renderer, nullptr);
-//				SDL_SetWindowSurfaceVSync(m_Window, 0);
-//				SDL_RenderPresent(m_Renderer);
-//				SDL_Delay(1000);
-//
-//
-
-//				auto texture = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_ABGR64, SDL_TEXTUREACCESS_STATIC, 512,
-//						5120);
-//				auto gpuTexture = SDL_CreateGPUTexture(m_Device, NULL);
-//				SDL_RenderTexture(m_Renderer, texture, NULL, NULL);
-
-
-//			}
-//		}
-//		counter++;
-//		return;
-//		if (counter % 100 == 0)
-//		{
-//			Log::GetCoreLogger()->info("Handling events...");
 		}
 	}
 
-	/*
-	 *  Reads incoming data...
-	 */
 
-	void Engine::Read()
+
+	// Continuously listens for inputs and events from the user with SDL API.
+	bool Engine::EventListener()
 	{
-		Log::GetCoreLogger()->info("READING...");
+		return InputHandler::GetInstance()->EventListener();
 	}
-
-	/*
-	 * Renders frames
-	 */
 
 	void Engine::Render()
 	{
-		SDL_SetRenderDrawColor(m_Renderer, 124, 218, 254, 255);
-		SDL_RenderClear(m_Renderer);
 
-		std::string path = "C:/Users/komvu/CLionProject/winther-engine/resources/obj/textures/";
-		TextureManager::GetInstance()->Load("box", path + "Box_D.jpg");
-		TextureManager::GetInstance()->Draw("box", 100, 50, 1024, 1024);
+		SDL_RenderClear(m_Renderer);
+		if(m_CurrentLevel != nullptr) m_CurrentLevel->Render();
+		EntityManager::GetInstance()->Draw();
+
+
+//		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
+
+		ImGui::Render();
+
+
 		SDL_RenderPresent(m_Renderer);
 
 	}
 
-
-	/*
-	 * Client game loop.
-	 */
-
-//	Client::Client() = default;
-
-
-//	Engine* Engine::CreateClient()
-//	{
-//		if (s_INSTANCE == nullptr)
-//		{
-//			s_INSTANCE = new Engine();
-//		}
-//
-//		return s_INSTANCE;
-//	}
-
-	void Engine::HandleInputs()
-	{
-
-	}
-
-	void Engine::LoadEntities()
+	// Quits safely
+	void Engine::Quit()
 	{
 
 
+
+		// Clean up data in other data bearing classes.
+		EntityManager::GetInstance()->Clean();
+		TextureManager::GetInstance()->Clean();
+		MapParser::GetInstance()->Clean();
+
+
+		// Destroying the SDL rendering and window contexts.
+		SDL_DestroyRenderer(m_Renderer);
+		SDL_DestroyWindow(m_Window);
+
+
 	}
-
-	bool Engine::RenderStaticEntities(const std::string&& filename)
-	{
-		for (const auto& e: m_EntityManager.GetStaticEntities())
-		{
-
-		}
-		return false;
-	}
-
 
 	Engine::~Engine()
 	{
-		SDL_DestroyRenderer(GetInstance()->m_Renderer);
-		SDL_DestroyWindow(GetInstance()->m_Window);
-		GetInstance()->m_Device = nullptr;
-		GetInstance()->m_Data = nullptr;
-		GetInstance()->m_DisplayMode = nullptr;
+		// Destroying ImGui context.
+		ImGui_ImplSDLRenderer3_Shutdown();
+		ImGui::DestroyContext();
+
+
+		m_Device = nullptr;
+		m_Data = nullptr;
+		m_CurrentLevel = nullptr;
+		m_Window = nullptr;
+		m_Renderer = nullptr;
+
+
 	}
 
-	Engine* Engine::GetInstance()
-
+	void Engine::Update()
 	{
-		if (s_INSTANCE == nullptr)
+
+		ImGui_ImplSDLRenderer3_NewFrame();
+		ImGui_ImplSDL3_NewFrame();
+		ImGui::NewFrame();
+		ImGui::ShowDemoWindow();
+
+		// Gets the time since the last rendered frame.
+		float dt = Time::GetInstance()->GetDeltaTime();
+		// Updates the state of the map.
+		if(m_CurrentLevel != nullptr) m_CurrentLevel->Update();
+		// Updates the states of every entity in the game based again on the deltatime calcualted by the class Time.
+		EntityManager::GetInstance()->Update(dt);
+
+
+
+	}
+
+	// All the values specifying which textures and entities to render by constant strings would
+	// get replaced by variables if I had time to implement all the systems needed.
+	void Engine::LoadResources()
+	{
+		// Loads the sprite for the player character.
+		Properties properties(SDL_FLIP_NONE, 35, 45 , 64, 64, "player", "sprites/");
+		TextureManager::GetInstance()->Load("player", properties.m_Source);
+		EntityManager::GetInstance()->addEntity("player", properties);
+
+		// Loads the map and logs the result.
+		if(!MapParser::GetInstance()->LoadMap("1", "map"))
 		{
-			s_INSTANCE = new Engine();
+			Log::GetCoreLogger()->info("Failed to load the map.");
 		}
 
-		return s_INSTANCE;
+		// Gets the relevant map.
+		m_CurrentLevel = MapParser::GetInstance()->GetTileMap("1");
+
 	}
 
 
-
-
-//	Client* Client::GetInstance()
-//	{
-//		if (s_INSTANCE == nullptr)
-//		{
-//			return new Client();
-//		}
-//
-//		return s_INSTANCE;
-//
-//	}
 };
 
 
-#endif
