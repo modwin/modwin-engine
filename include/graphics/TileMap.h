@@ -8,7 +8,7 @@
 #include <graphics/SurfaceLayer.h>
 #include <vector>
 
-namespace Winther
+namespace Modwin
 {
 	class TileMap
 	{

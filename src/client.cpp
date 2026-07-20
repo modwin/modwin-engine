@@ -5,7 +5,7 @@
 
 #include "core/Engine.h"
 
-namespace Winther
+namespace Modwin
 {
 
 	#include <SDL3/SDL_main.h>

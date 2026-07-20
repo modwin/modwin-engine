@@ -15,7 +15,7 @@
 
 
 
-namespace Winther
+namespace Modwin
 {
 
 	typedef std::vector<std::shared_ptr<Entity>> EntityVector;
@@ -56,7 +56,7 @@ namespace Winther
 
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_ENTITYMANAGER_H
 

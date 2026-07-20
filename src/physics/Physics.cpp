@@ -4,8 +4,8 @@
 
 #include "physics/Physics.h"
 
-namespace Winther
+namespace Modwin
 {
 
 
-} // Winther
+} // Modwin

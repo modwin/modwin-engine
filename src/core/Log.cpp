@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace Winther
+namespace Modwin
 {
 
 	Log::Log() = default;

@@ -4,7 +4,7 @@
 
 #include "character/Player.h"
 
-namespace Winther
+namespace Modwin
 {
 
 

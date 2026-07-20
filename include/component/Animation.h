@@ -8,7 +8,7 @@
 #include <string>
 #include <graphics/TextureManager.h>
 
-namespace Winther
+namespace Modwin
 {
 
 	class Animation
@@ -28,6 +28,6 @@ namespace Winther
 
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_ANIMATION_H

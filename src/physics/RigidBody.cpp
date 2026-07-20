@@ -4,7 +4,7 @@
 
 #include "physics/RigidBody.h"
 
-Winther::RigidBody::~RigidBody()
+Modwin::RigidBody::~RigidBody()
 {
 
 }

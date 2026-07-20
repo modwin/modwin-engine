@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace Winther
+namespace Modwin
 {
 	void Animation::SetValues(std::string id, int spriteRow, int frameCount, int animationSpeed, SDL_FlipMode flipMode)
 	{
@@ -28,4 +28,4 @@ namespace Winther
 		m_SpriteFrame = (SDL_GetTicks() / m_AnimationSpeed) % m_FrameCount;
 
 	}
-} // Winther
+} // Modwin

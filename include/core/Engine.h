@@ -30,7 +30,7 @@
 #include <graphics/TileMap.h>
 
 
-namespace Winther
+namespace Modwin
 {
 
 
@@ -91,7 +91,7 @@ namespace Winther
 	};
 
 
-} // Winther
+} // Modwin
 
 
 #endif //ENGINE_H

@@ -10,7 +10,7 @@
 #include <graphics/TileLayer.h>
 #include <tinyxml2.h>
 
-namespace Winther
+namespace Modwin
 {
 	class MapParser
 	{

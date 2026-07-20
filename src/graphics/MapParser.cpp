@@ -9,12 +9,12 @@
 #include <istream>
 #include "Log.h"
 
-namespace Winther
+namespace Modwin
 {
 
 	MapParser* MapParser::s_INSTANCE = nullptr;
 
-	MapParser* Winther::MapParser::GetInstance()
+	MapParser* Modwin::MapParser::GetInstance()
 	{
 		if(s_INSTANCE == nullptr)
 		{

@@ -8,7 +8,7 @@
 #include <SDL3/SDL.h>
 #include <core/Engine.h>
 
-namespace Winther
+namespace Modwin
 {
 	class InputHandler
 	{
@@ -31,7 +31,7 @@ namespace Winther
 
 
 	};
-}//Winther
+}//Modwin
 
 
 #endif //WINTHER_ENGINE_INPUTHANDLER_H

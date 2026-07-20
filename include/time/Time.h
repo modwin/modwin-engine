@@ -5,7 +5,7 @@
 #ifndef WINTHER_ENGINE_TIME_H
 #define WINTHER_ENGINE_TIME_H
 
-namespace Winther
+namespace Modwin
 {
 	const int FPS_LIMIT = 60;
 	const float DELTA_TIME_MAX = 1.5f;

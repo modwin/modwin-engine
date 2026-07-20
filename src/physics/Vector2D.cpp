@@ -5,7 +5,7 @@
 #include "physics/Vector2D.h"
 #include <iostream>
 
-namespace Winther
+namespace Modwin
 {
 
 	double Vector2D::Length()
@@ -29,4 +29,4 @@ namespace Winther
 	}
 
 
-} // Winther
+} // Modwin

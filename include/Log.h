@@ -9,7 +9,7 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include <spdlog/logger.h>
 
-namespace Winther
+namespace Modwin
 {
 
 	class Log
@@ -42,7 +42,7 @@ namespace Winther
 	}
 
 
-} // Winther
+} // Modwin
 
 #endif
 

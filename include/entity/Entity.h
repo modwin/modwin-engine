@@ -19,7 +19,7 @@
 #include <cfg/Config.h>
 
 
-namespace Winther
+namespace Modwin
 {
 	class Properties
 	{
@@ -87,6 +87,6 @@ namespace Winther
 	};
 
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_ENTITY_H

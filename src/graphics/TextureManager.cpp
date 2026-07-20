@@ -8,7 +8,7 @@
 #include "core/Engine.h"
 
 
-namespace Winther
+namespace Modwin
 {
 
 	TextureManager* TextureManager::s_INSTANCE = nullptr;
@@ -105,4 +105,4 @@ namespace Winther
 
 
 //	TextureManager* TextureManager::GetInstance()
-} // Winther
+} // Modwin

@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 #include "entity/Entity.h"
-namespace Winther
+namespace Modwin
 {
 
 	class Component

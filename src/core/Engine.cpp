@@ -12,7 +12,7 @@
 
 
 const char* SDL_HINT_IME_SHOW_UI;
-namespace Winther
+namespace Modwin
 {
 	Engine* Engine::s_INSTANCE = nullptr;
 
@@ -43,7 +43,7 @@ namespace Winther
 
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
-			Winther::Log::GetCoreLogger()->info("SDL_Init error...");
+			Modwin::Log::GetCoreLogger()->info("SDL_Init error...");
 			SDL_Log("SDL_Log = SDL_Init error.\nError: %s", SDL_GetError());
 			return false;
 		}
@@ -78,7 +78,7 @@ namespace Winther
 			h = display->h;
 		}
 
-		m_Window = SDL_CreateWindow("Winther engine", 1280, 720,
+		m_Window = SDL_CreateWindow("Modwin engine", 1280, 720,
 				SDL_WINDOW_RESIZABLE);
 		SDL_SetRenderVSync(m_Renderer, 1);
 		auto context = SDL_GL_CreateContext(m_Window);
@@ -110,7 +110,7 @@ namespace Winther
 		}
 
 		// Logs result of Init()
-		Winther::Log::GetCoreLogger()->info("SDL Initialized correctly.");
+		Modwin::Log::GetCoreLogger()->info("SDL Initialized correctly.");
 
 		if (!InitImgui())
 		{

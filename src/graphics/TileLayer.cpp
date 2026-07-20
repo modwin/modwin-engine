@@ -8,7 +8,7 @@
 #include <utility>
 #include <algorithm>
 
-namespace Winther
+namespace Modwin
 {
 	TileLayer::TileLayer(int tileWidth, int rowCount, int columnCount, TileVec2D tileVec, TilesetVec tileSetVec)
 			: SurfaceLayer()
@@ -143,4 +143,4 @@ namespace Winther
 //	}
 
 
-} // Winther
+} // Modwin

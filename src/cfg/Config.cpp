@@ -4,7 +4,7 @@
 
 #include "cfg/Config.h"
 
-namespace Winther
+namespace Modwin
 {
 	std::map<std::string, SDL_Scancode> Config::s_DEFAULT_KEY_MAP;
 

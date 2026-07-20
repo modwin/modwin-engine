@@ -10,7 +10,7 @@
 #include <vector>
 #include <string>
 
-namespace Winther
+namespace Modwin
 {
 	struct Tileset
 	{
@@ -50,6 +50,6 @@ namespace Winther
 		std::vector<int> m_UsedTiles;
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_TILELAYER_H

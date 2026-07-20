@@ -8,7 +8,7 @@
 #include <physics/Vector2D.h>
 #include <iostream>
 
-namespace Winther
+namespace Modwin
 {
 
 	class Transform

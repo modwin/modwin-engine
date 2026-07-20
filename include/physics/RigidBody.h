@@ -10,7 +10,7 @@
 #define MASS_MULTIPLE 1.0f
 #define GRAVITATIONAL_FORCE 9.8
 
-namespace Winther{
+namespace Modwin{
 
 	class RigidBody
 	{

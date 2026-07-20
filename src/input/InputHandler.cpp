@@ -5,7 +5,7 @@
 #include "input/InputHandler.h"
 #include <core/Engine.h>
 
-namespace Winther
+namespace Modwin
 {
 	InputHandler* InputHandler::s_INSTANCE = nullptr;
 

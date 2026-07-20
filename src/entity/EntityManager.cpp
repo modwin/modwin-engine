@@ -5,7 +5,7 @@
 #include "entity/EntityManager.h"
 #include "character/Player.h"
 
-namespace Winther
+namespace Modwin
 {
 
 	EntityManager* EntityManager::s_INSTANCE = nullptr;
@@ -100,4 +100,4 @@ namespace Winther
 	}
 
 
-} // Winther
+} // Modwin

@@ -5,7 +5,7 @@
 #ifndef WINTHER_ENGINE_VECTOR2D_H
 #define WINTHER_ENGINE_VECTOR2D_H
 
-namespace Winther
+namespace Modwin
 {
 
 	class Vector2D
@@ -55,6 +55,6 @@ namespace Winther
 
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_VECTOR2D_H

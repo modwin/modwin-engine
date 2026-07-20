@@ -4,7 +4,7 @@
 
 #include "component/Component.h"
 
-namespace Winther{
+namespace Modwin{
 
 
 

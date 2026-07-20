@@ -5,7 +5,7 @@
 #include "time/Time.h"
 #include <SDL3/SDL.h>
 
-namespace Winther
+namespace Modwin
 {
 	Time* Time::s_INSTANCE = nullptr;
 

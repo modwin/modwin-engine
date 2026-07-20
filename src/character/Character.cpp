@@ -4,7 +4,7 @@
 
 #include <character/Character.h>
 
-namespace Winther
+namespace Modwin
 {
 //	void Character::Draw()
 //	{

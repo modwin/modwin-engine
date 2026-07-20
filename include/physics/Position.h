@@ -5,7 +5,7 @@
 #ifndef WINTHER_ENGINE_POSITION_H
 #define WINTHER_ENGINE_POSITION_H
 
-namespace Winther{
+namespace Modwin{
 
 	class Position {
 

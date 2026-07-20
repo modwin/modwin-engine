@@ -5,7 +5,7 @@
 #ifndef WINTHER_ENGINE_PHYSICS_H
 #define WINTHER_ENGINE_PHYSICS_H
 
-namespace Winther
+namespace Modwin
 {
 
 	class Physics
@@ -16,6 +16,6 @@ namespace Winther
 	public:
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_PHYSICS_H

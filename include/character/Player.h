@@ -11,7 +11,7 @@
 
 
 
-namespace Winther{
+namespace Modwin{
 
 	class Player: public Character
 	{

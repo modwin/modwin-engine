@@ -10,7 +10,7 @@
 #include <SDL3/SDL.h>
 
 
-namespace Winther
+namespace Modwin
 {
 	class Config
 	{

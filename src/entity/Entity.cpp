@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace Winther
+namespace Modwin
 {
 
 	Entity::Entity(std::string  tag, size_t id, Properties properties): m_Tag(std::move(tag)), m_Id(id), m_Exists(true), m_Transform(new Transform(properties.x, properties.y)), m_TextureID(properties.m_TextureID), m_Properties(properties){}
@@ -67,4 +67,4 @@ namespace Winther
 	}
 
 
-} // Winther
+} // Modwin

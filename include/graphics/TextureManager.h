@@ -14,7 +14,7 @@
 #include <string>
 #include "tinyxml2.h"
 
-namespace Winther
+namespace Modwin
 {
 
 	class TextureManager
@@ -47,6 +47,6 @@ namespace Winther
 		static TextureManager* s_INSTANCE;
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_TEXTUREMANAGER_H

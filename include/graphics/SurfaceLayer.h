@@ -5,7 +5,7 @@
 #ifndef WINTHER_ENGINE_SURFACELAYER_H
 #define WINTHER_ENGINE_SURFACELAYER_H
 
-namespace Winther
+namespace Modwin
 {
 
 	class SurfaceLayer
@@ -21,6 +21,6 @@ namespace Winther
 
 	};
 
-} // Winther
+} // Modwin
 
 #endif //WINTHER_ENGINE_SURFACELAYER_H
