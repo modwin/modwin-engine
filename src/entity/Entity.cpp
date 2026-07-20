@@ -71,11 +71,11 @@ namespace Modwin
 		return m_Exists;
 	}
 
-	void Entity::Clean()
+	void Entity::Clean() const
 	{
-		m_Animation = nullptr;
-		m_Transform = nullptr;
-		m_RigidBody = nullptr;
+		delete m_Animation;
+		delete m_Transform;
+		delete m_RigidBody;
 	}
 
 

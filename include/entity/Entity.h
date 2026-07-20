@@ -63,7 +63,7 @@ namespace Modwin
 
 			virtual void Update(float dt);
 
-			void Clean();
+			void Clean() const;
 
 			size_t GetId() const;
 
