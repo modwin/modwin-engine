@@ -35,7 +35,6 @@ namespace Modwin
 	{
 		s_CoreLogger = nullptr;
 		s_ClientLogger = nullptr;
-		delete this;
 	}
 
 }

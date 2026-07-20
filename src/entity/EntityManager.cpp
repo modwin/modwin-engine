@@ -96,7 +96,9 @@ namespace Modwin
 
 	EntityManager::~EntityManager()
 	{
-		delete this;
+		m_Entities.clear();
+		m_staticEntities.clear();
+		m_entityTagMap.clear();
 	}
 
 

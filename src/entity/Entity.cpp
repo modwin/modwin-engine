@@ -21,8 +21,12 @@ namespace Modwin
 
 	Entity::~Entity()
 	{
-		delete this;
+		m_Transform = nullptr;
+		m_RigidBody = nullptr;
+		m_Animation = nullptr;
+		m_Exists = false;
 	}
+
 
 	void Entity::Draw()
 	{
