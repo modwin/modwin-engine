@@ -56,7 +56,7 @@ namespace Modwin
 
 			bool Init();
 
-			bool InitImgui();
+			bool InitImgui() const;
 
 			void Quit();
 

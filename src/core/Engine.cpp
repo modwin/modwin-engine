@@ -110,7 +110,7 @@ namespace Modwin
 		}
 
 		// Logs result of Init()
-		Modwin::Log::GetCoreLogger()->info("SDL Initialized correctly.");
+		Log::GetCoreLogger()->info("SDL Initialized correctly.");
 
 		if (!InitImgui())
 		{
@@ -124,7 +124,7 @@ namespace Modwin
 
 	}
 
-	bool Engine::InitImgui()
+	bool Engine::InitImgui() const
 	{
 		std::cout << IMGUI_CHECKVERSION() << std::endl;
 		bool error = ImGui::CreateContext();
@@ -132,10 +132,9 @@ namespace Modwin
 		ImGuiIO& guiIo = ImGui::GetIO();
 		guiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		(void)guiIo;
-		SDL_Window* w = SDL_CreatePopupWindow(m_Window, 200, 200, 1920, 1080, SDL_WINDOW_RESIZABLE);
-		SDL_ShowWindow;
+		SDL_ShowWindow(m_Window);
 
-		error = ImGui_ImplSDL3_InitForSDLRenderer(w, m_Renderer);
+		error = ImGui_ImplSDL3_InitForSDLRenderer(m_Window, m_Renderer);
 		error = ImGui_ImplSDLRenderer3_Init(m_Renderer);
 
 
@@ -163,7 +162,6 @@ namespace Modwin
 
 
 				// Calculates the tick rate for the next delta time value for consistent rendering.
-//				ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
 				Time::GetInstance()->CalculateTickRate();
 
 			}
@@ -186,9 +184,10 @@ namespace Modwin
 		EntityManager::GetInstance()->Draw();
 
 
-//		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
 
 		ImGui::Render();
+		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
+
 
 
 		SDL_RenderPresent(m_Renderer);
