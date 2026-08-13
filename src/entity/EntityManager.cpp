@@ -26,7 +26,7 @@ namespace Modwin
 			SDL_Log("Properties H = %d", properties.h);
 			auto p = std::make_shared<Player>(tag, ++m_entityCount, properties);
 			SDL_Log("Player height = %d", p->m_Properties.h);
-			m_Entities.push_back(static_cast<std::shared_ptr<Entity>>(p));
+			m_Entities.push_back(p);
 			return p;
 		}
 		else {
@@ -34,7 +34,6 @@ namespace Modwin
 			m_Entities.push_back(e);
 			return e;
 		}
-		return nullptr;
 	}
 
 	/*
@@ -86,12 +85,9 @@ namespace Modwin
 
 	void EntityManager::Clean()
 	{
-		for(auto e : m_Entities)
-		{
-			e->Clean();
-			e = nullptr;
-		}
-
+		m_Entities.clear();
+		m_staticEntities.clear();
+		m_entityTagMap.clear();
 	}
 
 	EntityManager::~EntityManager()
