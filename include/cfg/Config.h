@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-03.
-//
-
 #ifndef WINTHER_ENGINE_CONFIG_H
 #define WINTHER_ENGINE_CONFIG_H
 
@@ -33,11 +29,8 @@ namespace Modwin
 
 		Config();
 
-		~Config();
-	private:
-
+		~Config() = default;
 	};
 }
 
-
-#endif //WINTHER_ENGINE_CONFIG_H
+#endif
