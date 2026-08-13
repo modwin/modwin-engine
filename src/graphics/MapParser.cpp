@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-04.
-//
-
 #include "graphics/MapParser.h"
 #include <iostream>
 #include <string>
