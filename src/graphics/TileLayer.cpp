@@ -9,7 +9,7 @@ namespace Modwin
 	TileLayer::TileLayer(int tileWidth, int rowCount, int columnCount, TileVec2D tileVec, TilesetVec tileSetVec)
 			: SurfaceLayer()
 	{
-		m_TileWidth = tileWidth;
+		m_Width = tileWidth;
 		m_RowCount = rowCount;
 		m_ColumnCount = columnCount;
 		m_TileVec2D = std::move(tileVec);
@@ -19,11 +19,6 @@ namespace Modwin
 		{
 			TextureManager::GetInstance()->Load(tileset.name, "tiles");
 		}
-	}
-
-	Tileset::Tileset()
-	{
-
 	}
 
 	void TileLayer::Render()

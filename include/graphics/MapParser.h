@@ -16,7 +16,7 @@ namespace Modwin
 		void Clean();
 		bool LoadMap(const std::string& id, const std::string& fileName);
 
-		inline TileMap* GetTileMap(const std::string& id){return m_Map[id];}
+		TileMap* GetTileMap(const std::string& id){return m_Map[id];}
 
 		bool Parse(const std::string& id, const std::string& source);
 		Tileset ParseTileSet(tinyxml2::XMLElement* tilesetElement);
