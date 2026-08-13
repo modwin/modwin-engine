@@ -24,21 +24,23 @@ cmake_modules/**.cmake
 
 
 
-/lib/tinyxml2/tinyxml2.cpp
-/lib/tinyxml2/tinyxml2.h
-/lib/imgui/imconfig.h
-/lib/imgui/imgui.cpp
-/lib/imgui/imgui.h
-/lib/imgui/imgui_demo.cpp
-/lib/imgui/imgui_draw.cpp
-/lib/imgui/imgui_impl_sdl3.cpp
-/lib/imgui/imgui_impl_sdl3.h
-/lib/imgui/imgui_impl_sdlrenderer3.cpp
-/lib/imgui/imgui_impl_sdlrenderer3.h
-/lib/imgui/imgui_internal.h
-/lib/imgui/imgui_tables.cpp
-/lib/imgui/imgui_widgets.cpp
-/lib/imgui/imstb_rectpack.h
-/lib/imgui/imstb_textedit.h
-/lib/imgui/imstb_truetype.h
+/lib/tinyxml2/
+/lib/tinyxml2/*
+/lib/imgui/*
 .idea
+/lib/bin/
+/lib/imgui/
+/lib/imgui.*
+/lib/libIMGUI_LIB.*
+/lib/libSDL3_image.dll.a
+/lib/libspdlog.a
+/lib/libtinyobjloader.a
+/lib/libtinyxml2.a
+/lib/libwinther_engine.dll
+/lib/SDL3.dll
+/lib/SDL3_image.dll
+/lib/static/
+/lib/tinyobjloader.lib
+/lib/tinyxml2.dll
+/lib/tinyxml2.lib
+/lib/WINTHER_SRC.exe
