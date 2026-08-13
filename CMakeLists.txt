@@ -1,136 +1,107 @@
 cmake_minimum_required(VERSION 3.28)
-project(winther_engine)
+
+project(modwin_engine VERSION 0.1.0 LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# CMake module path
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
+# Keep generated files in the build tree instead of mixing them with source files.
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-# Output directories
-set(BASE_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/lib/")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${BASE_OUTPUT_DIR}static")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BASE_OUTPUT_DIR}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BASE_OUTPUT_DIR}")
+# Local dependency locations. Override these cache variables from CLion or with
+# -D<variable>=<path> when dependencies are installed elsewhere.
+set(SDL3_DIR "C:/SDL3-3.1.6/x86_64-w64-mingw32/lib/cmake/SDL3" CACHE PATH "SDL3 CMake package directory")
+set(SDL3_image_DIR "C:/SDL3_image-3.1.0/x86_64-w64-mingw32/lib/cmake/SDL3_image" CACHE PATH "SDL3_image CMake package directory")
+set(spdlog_DIR "C:/spdlog-1.xx/build1" CACHE PATH "spdlog CMake package directory")
+set(MODWIN_TINYXML2_SOURCE_DIR "C:/TINYXML2_SRC" CACHE PATH "TinyXML2 source directory")
 
-# Library paths
-set(SDL3_DIR "C:/SDL3-3.1.6/x86_64-w64-mingw32/lib/cmake/SDL3")
-set(spdlog_DIR "C:/spdlog-1.xx/build1")
-set(SDL3_image_DIR "C:/SDL3_image-3.1.0/x86_64-w64-mingw32/lib/cmake/SDL3_image")
-set(SDL3_image_INCLUDE_DIRS "C:/SDL3_image-3.1.0/x86_64-w64-mingw32/include")
-set(TinyXML2_INCLUDE_DIR "C:/Program Files (x86)/tinyxml2/include")
+find_package(SDL3 CONFIG REQUIRED)
+find_package(SDL3_image CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
+if(EXISTS "${MODWIN_TINYXML2_SOURCE_DIR}/CMakeLists.txt")
+    add_subdirectory(
+        "${MODWIN_TINYXML2_SOURCE_DIR}"
+        "${CMAKE_BINARY_DIR}/external/tinyxml2"
+        EXCLUDE_FROM_ALL
+    )
+else()
+    find_package(tinyxml2 CONFIG REQUIRED)
+endif()
 
-# Querying CMake to find the required packages.
-find_package(SDL3_image REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(SDL3)
-find_package(spdlog REQUIRED)
+add_library(modwin_imgui STATIC
+    external/imgui/imgui.cpp
+    external/imgui/imgui_demo.cpp
+    external/imgui/imgui_draw.cpp
+    external/imgui/imgui_tables.cpp
+    external/imgui/imgui_widgets.cpp
+    external/imgui/imgui_impl_sdl3.cpp
+    external/imgui/imgui_impl_sdlrenderer3.cpp
+)
 
-# Specifies the the IMGUI library.
-add_library(IMGUI_LIB SHARED
-        lib/imgui/imgui_impl_sdl3.h
-        lib/imgui/imgui_impl_sdl3.cpp
-        lib/imgui/imgui_impl_sdlrenderer3.cpp
-        lib/imgui/imgui_impl_sdlrenderer3.h
-        lib/imgui/imgui.h
-        lib/imgui/imgui.cpp
-        lib/imgui/imgui_demo.cpp
-        lib/imgui/imstb_truetype.h
-        lib/imgui/imstb_textedit.h
-        lib/imgui/imstb_rectpack.h
-        lib/imgui/imgui_internal.h
-        lib/imgui/imgui_draw.cpp
-        lib/imgui/imgui_tables.cpp
-        lib/imgui/imgui_widgets.cpp
-        include/physics/Position.h)
+target_include_directories(modwin_imgui PUBLIC external/imgui)
+target_link_libraries(modwin_imgui PUBLIC SDL3::SDL3)
 
-target_link_directories(IMGUI_LIB PUBLIC ${SDL3_INCLUDE_DIR})
-target_include_directories(IMGUI_LIB PUBLIC ${SDL3_INCLUDE_DIR})
+add_library(modwin_engine STATIC
+    src/cfg/Config.cpp
+    src/character/Character.cpp
+    src/character/Player.cpp
+    src/component/Animation.cpp
+    src/component/Component.cpp
+    src/core/Engine.cpp
+    src/core/Log.cpp
+    src/core/ResourcePaths.cpp
+    src/entity/Entity.cpp
+    src/entity/EntityManager.cpp
+    src/graphics/MapParser.cpp
+    src/graphics/TextureManager.cpp
+    src/graphics/TileLayer.cpp
+    src/input/InputHandler.cpp
+    src/physics/Physics.cpp
+    src/physics/RigidBody.cpp
+    src/physics/Transform.cpp
+    src/physics/Vector2D.cpp
+    src/time/Time.cpp
+)
 
-target_link_libraries(IMGUI_LIB PUBLIC
-        SDL3::SDL3)
+add_library(modwin::engine ALIAS modwin_engine)
 
+target_include_directories(modwin_engine PUBLIC include)
 
-add_executable(WINTHER_SRC src/client.cpp)
-
-# Specifies the include directories.
-target_include_directories(WINTHER_SRC PUBLIC
-        include
-        lib/imgui
-        ${TinyXML2_INCLUDE_DIR})
-
-
-add_library(winther_engine SHARED
-        src/client.cpp
-        src/core/Engine.cpp
-        src/core/Log.cpp
-        src/graphics/TextureManager.cpp
-        src/entity/EntityManager.cpp
-        src/entity/Entity.cpp
-        src/physics/Physics.cpp
-        src/component/Component.cpp
-        src/character/Player.cpp
-        src/physics/Transform.cpp
-        src/physics/Vector2D.cpp
-        src/component/Animation.cpp
-        include/component/Animation.h
-        include/character/Character.h
-        src/physics/RigidBody.cpp
-        include/physics/RigidBody.h
-        src/input/InputHandler.cpp
-        include/input/InputHandler.h
-        src/character/Character.cpp
-        src/cfg/Config.cpp
-        include/cfg/Config.h
-        src/time/Time.cpp
-        include/time/Time.h
-        include/graphics/SurfaceLayer.h
-        include/graphics/TileMap.h
-        src/graphics/TileLayer.cpp
-        include/graphics/TileLayer.h
-        src/graphics/MapParser.cpp
-        include/graphics/MapParser.h)
-
-target_include_directories(winther_engine PUBLIC
-        include
-        lib/imgui
-        ${TinyXML2_INCLUDE_DIR}
-        )
-
-add_subdirectory("C:/TINYXML2_SRC" tinyxml2_build)
-link_directories("C:/Program Files (x86)/tinyxml2/lib/tinyxml2.lib")
-link_directories("C:/Program Files (x86)/tinyxml2/lib/tinyxml2.dll")
-link_directories("C:/Program Files (x86)/tinyxml2/lib/libtinyxml2.a")
-
-target_link_libraries(winther_engine PUBLIC tinyxml2)
-target_link_libraries(WINTHER_SRC PUBLIC tinyxml2)
-
-#target_link_libraries(winther_engine PUBLIC ${TinyXML2_LIBRARIES})
-#target_link_libraries(WINTHER_SRC PUBLIC ${TinyXML2_LIBRARIES})
-
-
-
-
-
-target_link_libraries(winther_engine PUBLIC
+target_link_libraries(modwin_engine
+    PUBLIC
         SDL3::SDL3
-        spdlog::spdlog
         SDL3_image::SDL3_image-shared
-        tinyxml2
-        IMGUI_LIB)
-
-target_link_libraries(WINTHER_SRC PUBLIC
-        SDL3::SDL3
         spdlog::spdlog
-        winther_engine
-        SDL3_image::SDL3_image-shared
-        tinyxml2
-        IMGUI_LIB)
+        tinyxml2::tinyxml2
+        modwin_imgui
+)
 
+add_executable(modwin_game src/main.cpp)
+target_link_libraries(modwin_game PRIVATE modwin::engine)
 
+if(MSVC)
+    target_compile_options(modwin_engine PRIVATE /W4)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(modwin_engine PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
-
-
-# Additional flags to ensure correct entry point
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,-subsystem,console")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mconsole")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -e mainCRTStartup")
+# Place runtime libraries beside the executable for local development.
+if(WIN32)
+    add_custom_command(TARGET modwin_game POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "$<TARGET_FILE:SDL3::SDL3>"
+            "$<TARGET_FILE_DIR:modwin_game>"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "$<TARGET_FILE:SDL3_image::SDL3_image-shared>"
+            "$<TARGET_FILE_DIR:modwin_game>"
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_SOURCE_DIR}/resources"
+            "$<TARGET_FILE_DIR:modwin_game>/resources"
+        VERBATIM
+    )
+endif()
