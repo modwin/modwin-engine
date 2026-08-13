@@ -1,13 +1,6 @@
-//
-// Created by komvu on 2024-12-06.
-//
-
 #include "core/Engine.h"
-
-
 #include <iostream>
 #include <SDL3_image/SDL_image.h>
-#include <vector>
 #include <time/Time.h>
 
 
