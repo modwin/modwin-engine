@@ -1,6 +1,3 @@
-//
-// Created by komvu on 2024-12-27.
-//
 #pragma once
 
 #ifndef MODWIN_ENGINE_ANIMATION_H

@@ -1,5 +1,4 @@
 #include "core/Engine.h"
-
 #include "Log.h"
 #include "entity/Entity.h"
 #include "entity/EntityManager.h"
@@ -8,7 +7,6 @@
 #include "graphics/TileMap.h"
 #include "input/InputHandler.h"
 #include "time/Time.h"
-
 #include <SDL3/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>

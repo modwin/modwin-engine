@@ -1,13 +1,10 @@
-//
-// Created by komvu on 2024-12-20.
-//
 #pragma once
 #ifndef MODWIN_ENGINE_COMPONENT_H
 #define MODWIN_ENGINE_COMPONENT_H
 
 #include <string>
 #include <utility>
-#include "entity/Entity.h"
+
 namespace Modwin
 {
 

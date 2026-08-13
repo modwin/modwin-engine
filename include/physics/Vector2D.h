@@ -1,6 +1,3 @@
-//
-// Created by komvu on 2024-12-27.
-//
 #pragma once
 #ifndef MODWIN_ENGINE_VECTOR2D_H
 #define MODWIN_ENGINE_VECTOR2D_H

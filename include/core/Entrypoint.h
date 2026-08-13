@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-12.
-//
-
 #ifndef MAIN_CPP
 #define MAIN_CPP
 

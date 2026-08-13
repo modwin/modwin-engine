@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-02.
-//
-
 #ifndef MODWIN_ENGINE_RIGIDBODY_H
 #define MODWIN_ENGINE_RIGIDBODY_H
 

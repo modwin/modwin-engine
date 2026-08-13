@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-10.
-//
-
 #include "Log.h"
 #include <spdlog/spdlog.h>
 #include "spdlog/sinks/stdout_color_sinks.h"

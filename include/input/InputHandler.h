@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-03.
-//
-
 #ifndef MODWIN_ENGINE_INPUTHANDLER_H
 #define MODWIN_ENGINE_INPUTHANDLER_H
 

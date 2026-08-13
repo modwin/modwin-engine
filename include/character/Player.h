@@ -1,9 +1,6 @@
-//
-// Created by komvu on 2024-12-27.
-//
-
 #ifndef MODWIN_ENGINE_PLAYER_H
 #define MODWIN_ENGINE_PLAYER_H
+
 #include "Character.h"
 #include <memory>
 #include <physics/RigidBody.h>

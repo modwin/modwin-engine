@@ -1,11 +1,8 @@
-//
-// Created by komvu on 2024-12-19.
-//
+
 #pragma once
 
 #ifndef MODWIN_ENGINE_ENTITY_H
 #define MODWIN_ENGINE_ENTITY_H
-
 
 #include <string>
 #include <memory>

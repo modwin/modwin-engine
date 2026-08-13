@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-19.
-//
-
 #ifndef MODWIN_ENGINE_ENTITYMANAGER_H
 #define MODWIN_ENGINE_ENTITYMANAGER_H
 

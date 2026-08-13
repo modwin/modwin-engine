@@ -1,5 +1,4 @@
 #include "entity/Entity.h"
-
 #include <utility>
 
 namespace Modwin

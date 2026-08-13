@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-04.
-//
-
 #ifndef MODWIN_ENGINE_TILEMAP_H
 #define MODWIN_ENGINE_TILEMAP_H
 

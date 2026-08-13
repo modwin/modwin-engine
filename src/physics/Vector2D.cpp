@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-27.
-//
-
 #include "physics/Vector2D.h"
 #include <iostream>
 
