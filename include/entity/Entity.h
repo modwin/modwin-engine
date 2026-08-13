@@ -57,7 +57,7 @@ namespace Modwin
 
 			Entity(const Entity& other);
 
-			virtual const std::string&& GetTag();
+			virtual const std::string& GetTag();
 
 			virtual void Draw();
 

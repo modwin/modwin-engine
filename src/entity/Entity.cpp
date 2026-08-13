@@ -56,7 +56,7 @@ namespace Modwin
 		}
 	}
 
-	const std::string&& Entity::GetTag()
+	const std::string& Entity::GetTag()
 	{
 		return const_cast<std::string&&>(m_Tag);
 	}
