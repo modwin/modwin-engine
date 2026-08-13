@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-19.
-//
-
 #include "entity/EntityManager.h"
 #include "character/Player.h"
 
