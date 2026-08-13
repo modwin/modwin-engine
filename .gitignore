@@ -1,46 +1,29 @@
-CMakeLists.txt.user
+# CMake build trees and generated metadata
+/build/
+/cmake-build-*/
 CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
+CMakeFiles/
+CMakeScripts/
+Testing/
 Makefile
-*.cmake
-cmake-build-debug
-cmake-build-release
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
-_deps
+_deps/
 CMakeUserPresets.json
-cmake_modules/**.cmake
-/lib/imgui/*.cpp
-/imgui/*.h
-/lib/*.dll
-/lib/*.a
-/lib/*.lib
-/lib/static/*.a
-/lib/bin/*.*
+/cmake_modules/
 
+# Compiled output
+/lib/
+*.a
+*.dll
+*.exe
+*.lib
 
+# IDE and local user settings
+/.idea/
+*.user
 
-/lib/tinyxml2/
-/lib/tinyxml2/*
-/lib/imgui/*
-.idea
-/lib/bin/
-/lib/imgui/
-/lib/imgui.*
-/lib/libIMGUI_LIB.*
-/lib/libSDL3_image.dll.a
-/lib/libspdlog.a
-/lib/libtinyobjloader.a
-/lib/libtinyxml2.a
-/lib/libwinther_engine.dll
-/lib/SDL3.dll
-/lib/SDL3_image.dll
-/lib/static/
-/lib/tinyobjloader.lib
-/lib/tinyxml2.dll
-/lib/tinyxml2.lib
-/lib/WINTHER_SRC.exe
+# Runtime UI state
+imgui.ini
