@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#ifndef WINTHER_ENGINE_ANIMATION_H
-#define WINTHER_ENGINE_ANIMATION_H
+#ifndef MODWIN_ENGINE_ANIMATION_H
+#define MODWIN_ENGINE_ANIMATION_H
 #include <string>
 #include <graphics/TextureManager.h>
 
@@ -30,4 +30,4 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_ANIMATION_H
+#endif //MODWIN_ENGINE_ANIMATION_H

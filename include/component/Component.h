@@ -2,8 +2,8 @@
 // Created by komvu on 2024-12-20.
 //
 #pragma once
-#ifndef WINTHER_ENGINE_COMPONENT_H
-#define WINTHER_ENGINE_COMPONENT_H
+#ifndef MODWIN_ENGINE_COMPONENT_H
+#define MODWIN_ENGINE_COMPONENT_H
 
 #include <string>
 #include <utility>
@@ -38,4 +38,4 @@ namespace Modwin
 
 
 
-#endif //WINTHER_ENGINE_COMPONENT_H
+#endif //MODWIN_ENGINE_COMPONENT_H

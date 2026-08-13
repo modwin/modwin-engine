@@ -2,8 +2,8 @@
 // Created by komvu on 2026-02-20.
 //
 
-#ifndef WINTHER_ENGINE_POSITION_H
-#define WINTHER_ENGINE_POSITION_H
+#ifndef MODWIN_ENGINE_POSITION_H
+#define MODWIN_ENGINE_POSITION_H
 
 namespace Modwin{
 
@@ -12,6 +12,6 @@ namespace Modwin{
 	};
 }
 
-#endif //WINTHER_ENGINE_POSITION_H
+#endif //MODWIN_ENGINE_POSITION_H
 
 

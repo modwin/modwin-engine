@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-04.
 //
 
-#ifndef WINTHER_ENGINE_MAPPARSER_H
-#define WINTHER_ENGINE_MAPPARSER_H
+#ifndef MODWIN_ENGINE_MAPPARSER_H
+#define MODWIN_ENGINE_MAPPARSER_H
 
 #include <map>
 #include <graphics/TileMap.h>
@@ -25,7 +25,6 @@ namespace Modwin
 		bool Parse(const std::string& id, const std::string& source);
 		Tileset ParseTileSet(tinyxml2::XMLElement* tilesetElement);
 		TileLayer* ParseTileLayer(tinyxml2::XMLElement* layerElement, const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount);
-		void ParseXMLAttribute(std::string attr);
 
 	private:
 		MapParser(){};
@@ -38,4 +37,4 @@ namespace Modwin
 }
 
 
-#endif //WINTHER_ENGINE_MAPPARSER_H
+#endif //MODWIN_ENGINE_MAPPARSER_H

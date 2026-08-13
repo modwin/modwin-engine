@@ -1,108 +1,121 @@
-//
-// Created by komvu on 2024-12-17.
-//
-
 #include "graphics/TextureManager.h"
-#include <SDL3_image/SDL_image.h>
-#include <iostream>
-#include "core/Engine.h"
 
+#include "Log.h"
+#include "core/Engine.h"
+#include "core/ResourcePaths.h"
+
+#include <SDL3_image/SDL_image.h>
 
 namespace Modwin
 {
-
-	TextureManager* TextureManager::s_INSTANCE = nullptr;
-
 	TextureManager* TextureManager::GetInstance()
 	{
-		if (s_INSTANCE == nullptr)
-		{
-			s_INSTANCE = new TextureManager;
-		}
-
-		return s_INSTANCE;
+		static TextureManager instance;
+		return &instance;
 	}
 
-	bool TextureManager::Load(std::string&& name, std::string filePath)
+	bool TextureManager::Load(const std::string& name, const std::string& directory)
 	{
+		if (m_Textures.find(name) != m_Textures.end())
+		{
+			return true;
+		}
 
-		if(!m_Textures[name]){
-
-		filePath =  "../resources/" +filePath + name + ".png";
-		SDL_Surface* surface = IMG_Load(filePath.c_str());
-
+		const auto imagePath = GetResourcePath(directory) / (name + ".png");
+		SDL_Surface* surface = IMG_Load(imagePath.string().c_str());
 		if (surface == nullptr)
 		{
-			Log::GetCoreLogger()->info("Error loading file {0} with filepath = {1}.\n SDL_Error = {2}", name, filePath, SDL_GetError()); // Logs failures to load file.
-			std::cout << std::endl;
+			Log::GetCoreLogger()->error("Failed to load texture '{}': {}", imagePath.string(), SDL_GetError());
 			return false;
 		}
 
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(Engine::GetInstance()->GetRenderer(), surface);
+		SDL_DestroySurface(surface);
+
 		if (texture == nullptr)
 		{
-			Log::GetCoreLogger()->info("Error creating texture. SDL error: {1}", SDL_GetError());
+			Log::GetCoreLogger()->error("Failed to create texture '{}': {}", name, SDL_GetError());
 			return false;
 		}
-			m_Textures[name] = texture;
-		return true;
-		}
 
-		return false;
+		m_Textures.emplace(name, texture);
+		return true;
 	}
 
-	void TextureManager::Remove(std::string id)
+	void TextureManager::Destroy(const std::string& id)
 	{
+		const auto texture = m_Textures.find(id);
+		if (texture == m_Textures.end())
+		{
+			return;
+		}
 
+		SDL_DestroyTexture(texture->second);
+		m_Textures.erase(texture);
 	}
 
 	void TextureManager::Clean()
 	{
-		std::map<std::string, SDL_Texture*>::iterator iter;
-		for(iter = m_Textures.begin(); iter != m_Textures.end(); iter++){
-			SDL_DestroyTexture(iter->second);
+		for (const auto& [id, texture] : m_Textures)
+		{
+			(void)id;
+			SDL_DestroyTexture(texture);
 		}
 		m_Textures.clear();
-
 	}
 
-	void TextureManager::Draw(const std::string& id, float x, float y, float w, float h, SDL_FlipMode flipMode)
+	SDL_Texture* TextureManager::FindTexture(const std::string& id) const
 	{
-		SDL_FRect src = {0, 0, w, h};
-		SDL_FRect dest = {x, y, w, h};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), m_Textures[id] ,&src, &dest, 0,nullptr, flipMode);
+		const auto texture = m_Textures.find(id);
+		if (texture == m_Textures.end())
+		{
+			SDL_Log("Texture ID '%s' was not found.", id.c_str());
+			return nullptr;
+		}
+
+		return texture->second;
 	}
 
-	void TextureManager::Destroy(std::string id)
+	void TextureManager::Draw(const std::string& textureId, float x, float y, float width, float height,
+		SDL_FlipMode flipMode)
 	{
-		SDL_DestroyTexture(m_Textures[id]);
-		m_Textures.erase(id);
-	}
-
-	void TextureManager::DrawFrame(const std::string& textureID, float x, float y, float w, float h, int spriteRow, int frame, SDL_FlipMode flipMode)
-	{
-		SDL_FRect src = {w*frame, h*spriteRow, w, h};
-		SDL_FRect dest = {x, y, w, h};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), m_Textures[textureID] ,&src, &dest, 0,nullptr, SDL_FLIP_NONE);
-
-
-	}
-
-	void TextureManager::DrawTile(const std::string id, int tileWidth, int x, int y, int row, int frame, SDL_FlipMode flipMode)
-	{
-		if (m_Textures.find(id) == m_Textures.end()) {
-			SDL_Log("Texture ID %s not found", id.c_str());
+		SDL_Texture* texture = FindTexture(textureId);
+		if (texture == nullptr)
+		{
 			return;
 		}
 
-		SDL_FRect src = {static_cast<float>(tileWidth*frame), static_cast<float>(tileWidth* (row)), static_cast<float>(tileWidth), static_cast<float>(tileWidth)};
-		SDL_FRect dest = {static_cast<float>(x), static_cast<float>(y), static_cast<float>(tileWidth), static_cast<float>(tileWidth)};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), m_Textures[id] ,&src, &dest, 0,nullptr, flipMode);
-
+		const SDL_FRect source = {0, 0, width, height};
+		const SDL_FRect destination = {x, y, width, height};
+		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
 	}
 
+	void TextureManager::DrawFrame(const std::string& textureId, float x, float y, float width, float height,
+		int spriteRow, int frame, SDL_FlipMode flipMode)
+	{
+		SDL_Texture* texture = FindTexture(textureId);
+		if (texture == nullptr)
+		{
+			return;
+		}
 
+		const SDL_FRect source = {width * frame, height * spriteRow, width, height};
+		const SDL_FRect destination = {x, y, width, height};
+		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
+	}
 
+	void TextureManager::DrawTile(const std::string& textureId, int tileWidth, int x, int y, int row, int frame,
+		SDL_FlipMode flipMode)
+	{
+		SDL_Texture* texture = FindTexture(textureId);
+		if (texture == nullptr)
+		{
+			return;
+		}
 
-//	TextureManager* TextureManager::GetInstance()
-} // Modwin
+		const auto size = static_cast<float>(tileWidth);
+		const SDL_FRect source = {size * frame, size * row, size, size};
+		const SDL_FRect destination = {static_cast<float>(x), static_cast<float>(y), size, size};
+		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
+	}
+}

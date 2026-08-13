@@ -2,8 +2,8 @@
 // Created by komvu on 2024-12-28.
 //
 
-#ifndef WINTHER_ENGINE_CHARACTER_H
-#define WINTHER_ENGINE_CHARACTER_H
+#ifndef MODWIN_ENGINE_CHARACTER_H
+#define MODWIN_ENGINE_CHARACTER_H
 
 #include <utility>
 #include <entity/Entity.h>
@@ -28,4 +28,4 @@ class Character : public Entity
 	};
 }
 
-#endif //WINTHER_ENGINE_CHARACTER_H
+#endif //MODWIN_ENGINE_CHARACTER_H

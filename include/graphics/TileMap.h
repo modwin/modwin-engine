@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-04.
 //
 
-#ifndef WINTHER_ENGINE_TILEMAP_H
-#define WINTHER_ENGINE_TILEMAP_H
+#ifndef MODWIN_ENGINE_TILEMAP_H
+#define MODWIN_ENGINE_TILEMAP_H
 
 #include <graphics/SurfaceLayer.h>
 #include <vector>
@@ -39,4 +39,4 @@ namespace Modwin
 	};
 }
 
-#endif //WINTHER_ENGINE_TILEMAP_H
+#endif //MODWIN_ENGINE_TILEMAP_H

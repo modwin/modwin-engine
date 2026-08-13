@@ -1,5 +1,5 @@
-#ifndef WINTHER_ENGINE_CONFIG_H
-#define WINTHER_ENGINE_CONFIG_H
+#ifndef MODWIN_ENGINE_CONFIG_H
+#define MODWIN_ENGINE_CONFIG_H
 
 #include <map>
 #include <string>

@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-03.
 //
 
-#ifndef WINTHER_ENGINE_TIME_H
-#define WINTHER_ENGINE_TIME_H
+#ifndef MODWIN_ENGINE_TIME_H
+#define MODWIN_ENGINE_TIME_H
 
 namespace Modwin
 {
@@ -30,4 +30,4 @@ namespace Modwin
 }
 
 
-#endif //WINTHER_ENGINE_TIME_H
+#endif //MODWIN_ENGINE_TIME_H

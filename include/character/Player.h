@@ -2,12 +2,11 @@
 // Created by komvu on 2024-12-27.
 //
 
-#ifndef WINTHER_ENGINE_PLAYER_H
-#define WINTHER_ENGINE_PLAYER_H
+#ifndef MODWIN_ENGINE_PLAYER_H
+#define MODWIN_ENGINE_PLAYER_H
 #include "Character.h"
-#include <SDL3/SDL.h>
+#include <memory>
 #include <physics/RigidBody.h>
-#include <input/InputHandler.h>
 #include <cfg/Config.h>
 
 
@@ -40,4 +39,4 @@ namespace Modwin{
 
 
 
-#endif //WINTHER_ENGINE_PLAYER_H
+#endif //MODWIN_ENGINE_PLAYER_H

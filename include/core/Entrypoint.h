@@ -6,15 +6,15 @@
 #define MAIN_CPP
 
 #endif //MAIN_CPP
-#ifndef CPROG_WINTHER_ENGINE_ENTRYPOINT_H
-#define CPROG_WINTHER_ENGINE_ENTRYPOINT_H
+#ifndef MODWIN_ENGINE_ENTRYPOINT_H
+#define MODWIN_ENGINE_ENTRYPOINT_H
 
 
 #include "core/Engine.h"
 
-namespace Winther
+namespace Modwin
 {
 
 
-} // Winther
-#endif //CPROG_WINTHER_ENGINE_ENTRYPOINT_H
+} // Modwin
+#endif //MODWIN_ENGINE_ENTRYPOINT_H
