@@ -15,7 +15,7 @@ namespace Modwin
 		return s_INSTANCE;
 	}
 
-	std::shared_ptr<Entity> EntityManager::addEntity(const std::string& tag, Properties properties)
+	std::shared_ptr<Entity> EntityManager::AddEntity(const std::string& tag, Properties properties)
 	{
 		if(tag == "player")
 		{

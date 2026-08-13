@@ -2,8 +2,8 @@
 // Created by komvu on 2024-12-27.
 //
 #pragma once
-#ifndef WINTHER_ENGINE_VECTOR2D_H
-#define WINTHER_ENGINE_VECTOR2D_H
+#ifndef MODWIN_ENGINE_VECTOR2D_H
+#define MODWIN_ENGINE_VECTOR2D_H
 
 namespace Modwin
 {
@@ -57,4 +57,4 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_VECTOR2D_H
+#endif //MODWIN_ENGINE_VECTOR2D_H

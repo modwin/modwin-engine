@@ -2,16 +2,13 @@
 // Created by komvu on 2024-12-19.
 //
 
-#ifndef WINTHER_ENGINE_ENTITYMANAGER_H
-#define WINTHER_ENGINE_ENTITYMANAGER_H
+#ifndef MODWIN_ENGINE_ENTITYMANAGER_H
+#define MODWIN_ENGINE_ENTITYMANAGER_H
 
 #include <vector>
 #include <memory>
 #include <entity/Entity.h>
 #include <map>
-#include <SDL3/SDL.h>
-#include <character/Character.h>
-#include <character/Player.h>
 
 
 
@@ -29,13 +26,13 @@ namespace Modwin
 
 		static EntityManager* GetInstance();
 
-		std::shared_ptr<Entity> addEntity(const std::string& tag, Properties properties);
+		std::shared_ptr<Entity> AddEntity(const std::string& tag, Properties properties);
 
 		EntityVector& GetEntities();
 
 		EntityVector& GetEntitiesWithName(const std::string& tag);
 
-		inline const size_t GetEntityCount(){ return m_entityCount;}
+		[[nodiscard]] size_t GetEntityCount() const noexcept { return m_entityCount; }
 
 		const EntityVector& GetStaticEntities();
 
@@ -58,5 +55,5 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_ENTITYMANAGER_H
+#endif //MODWIN_ENGINE_ENTITYMANAGER_H
 

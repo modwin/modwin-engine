@@ -1,20 +1,23 @@
 #include "core/Engine.h"
 
-namespace Modwin
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+
+int main(int argc, char** argv)
 {
+	(void)argc;
+	(void)argv;
 
-	#include <SDL3/SDL_main.h>
-
-	int main(int argc, char** argv)
+	auto* engine = Modwin::Engine::GetInstance();
+	if (!engine->Init())
 	{
-
-		Engine::GetInstance()->Init();
-		Engine::GetInstance()->Run();
-		Engine::GetInstance()->Quit();
-
 		SDL_Quit();
-		return 0;
-	};
+		return 1;
+	}
+
+	engine->Run();
+	engine->Quit();
+	SDL_Quit();
+
+	return 0;
 }
-
-

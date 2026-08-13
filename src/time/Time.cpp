@@ -24,7 +24,7 @@ namespace Modwin
 
 		if(m_DeltaTime > DELTA_TIME_MAX)
 		{
-			m_DeltaTime - DELTA_TIME_MAX;
+			m_DeltaTime = DELTA_TIME_MAX;
 		}
 
 		m_LastTime = SDL_GetTicks();

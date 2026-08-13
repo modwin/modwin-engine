@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-04.
 //
 
-#ifndef WINTHER_ENGINE_SURFACELAYER_H
-#define WINTHER_ENGINE_SURFACELAYER_H
+#ifndef MODWIN_ENGINE_SURFACELAYER_H
+#define MODWIN_ENGINE_SURFACELAYER_H
 
 namespace Modwin
 {
@@ -23,4 +23,4 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_SURFACELAYER_H
+#endif //MODWIN_ENGINE_SURFACELAYER_H

@@ -2,8 +2,8 @@
 // Created by komvu on 2024-12-20.
 //
 
-#ifndef WINTHER_ENGINE_PHYSICS_H
-#define WINTHER_ENGINE_PHYSICS_H
+#ifndef MODWIN_ENGINE_PHYSICS_H
+#define MODWIN_ENGINE_PHYSICS_H
 
 namespace Modwin
 {
@@ -18,4 +18,4 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_PHYSICS_H
+#endif //MODWIN_ENGINE_PHYSICS_H

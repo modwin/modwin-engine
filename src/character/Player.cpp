@@ -3,6 +3,7 @@
 //
 
 #include "character/Player.h"
+#include "input/InputHandler.h"
 
 namespace Modwin
 {
@@ -48,9 +49,9 @@ namespace Modwin
 			return;
 		}
 
-		if (InputHandler::GetInstance()->GetKeyDown(m_Config.GetMoveUpKey()))
+		if (InputHandler::GetInstance()->IsKeyDown(m_Config.GetMoveUpKey()))
 		{
-			if(InputHandler::GetInstance()->GetKeyDown(m_Config.GetMoveDownKey()))
+			if(InputHandler::GetInstance()->IsKeyDown(m_Config.GetMoveDownKey()))
 				return;
 			m_RigidBody->ResetForce();
 			m_RigidBody->ApplyForceY(-2);
@@ -59,7 +60,7 @@ namespace Modwin
 			return;
 		}
 
-		if (InputHandler::GetInstance()->GetKeyDown(m_Config.GetMoveDownKey()))
+		if (InputHandler::GetInstance()->IsKeyDown(m_Config.GetMoveDownKey()))
 		{
 			m_RigidBody->ResetForce();
 			m_RigidBody->ApplyForceY(3);
@@ -90,11 +91,11 @@ namespace Modwin
 
 	bool Player::IsWalkingLeft() const
 	{
-		return InputHandler::GetInstance()->GetKeyDown(m_Config.GetMoveLeftKey());
+		return InputHandler::GetInstance()->IsKeyDown(m_Config.GetMoveLeftKey());
 	}
 
 	bool Player::IsWalkingRight() const
 	{
-		return InputHandler::GetInstance()->GetKeyDown(m_Config.GetMoveRightKey());
+		return InputHandler::GetInstance()->IsKeyDown(m_Config.GetMoveRightKey());
 	}
 }

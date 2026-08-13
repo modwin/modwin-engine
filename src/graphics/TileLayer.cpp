@@ -19,10 +19,9 @@ namespace Modwin
 		m_TileVec2D = std::move(tileVec);
 		m_Tilesets = std::move(tileSetVec);
 
-		for (int i = 0; i < m_Tilesets.size(); i++)
+		for (const auto& tileset : m_Tilesets)
 		{
-			m_UsedTiles.push_back(m_Tilesets[i].firstId);
-			TextureManager::GetInstance()->Load(m_Tilesets[i].name.c_str(), "tiles/");
+			TextureManager::GetInstance()->Load(tileset.name, "tiles");
 		}
 	}
 
@@ -33,9 +32,9 @@ namespace Modwin
 
 	void TileLayer::Render()
 	{
-		for (unsigned int row = 0; row < m_RowCount; row++)
+		for (int row = 0; row < m_RowCount; row++)
 		{
-			for (unsigned int column = 0; column < m_ColumnCount; column++)
+			for (int column = 0; column < m_ColumnCount; column++)
 			{
 				int tileId = m_TileVec2D[row][column];
 
@@ -73,7 +72,7 @@ namespace Modwin
 
 				// Render the tile
 //				Properties p(SDL_FLIP_NONE, column * tileset.tileWidth, row * tileset.tileWidth, tileset.tileWidth, tileset.tileWidth, tileset.name, tileset.source);
-//				EntityManager::GetInstance()->addEntity(tileset.name, p);
+//				EntityManager::GetInstance()->AddEntity(tileset.name, p);
 				TextureManager::GetInstance()->DrawTile(
 						tileset.name, tileset.tileWidth, column * tileset.tileWidth, row * tileset.tileWidth, tileRow, tileColumn);
 			}
@@ -87,14 +86,13 @@ namespace Modwin
 
 	bool TileLayer::ContainsTile(int row, int tileId)
 	{
-		for (int usedTile : m_UsedTiles)
+		if (row < 0 || row >= m_RowCount)
 		{
-			for (auto tile : m_TileVec2D[row])
-			{
-				if (tileId == tileId - tile) return true;
-			}
+			return false;
 		}
-		return false;
+
+		const auto& tiles = m_TileVec2D[static_cast<std::size_t>(row)];
+		return std::find(tiles.begin(), tiles.end(), tileId) != tiles.end();
 	}
 
 	int TileLayer::CalculateTileForCorruption(int row, int column)

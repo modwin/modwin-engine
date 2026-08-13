@@ -3,8 +3,8 @@
 //
 #pragma once
 
-#ifndef WINTHER_ENGINE_ENTITY_H
-#define WINTHER_ENGINE_ENTITY_H
+#ifndef MODWIN_ENGINE_ENTITY_H
+#define MODWIN_ENGINE_ENTITY_H
 
 
 #include <string>
@@ -75,4 +75,4 @@ namespace Modwin
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_ENTITY_H
+#endif //MODWIN_ENGINE_ENTITY_H

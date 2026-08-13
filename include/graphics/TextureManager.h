@@ -1,52 +1,34 @@
-//
-// Created by komvu on 2024-12-17.
-//
-
-
 #pragma once
 
-#ifndef WINTHER_ENGINE_TEXTUREMANAGER_H
-#define WINTHER_ENGINE_TEXTUREMANAGER_H
+#include <SDL3/SDL.h>
 
 #include <string>
-#include <SDL3/SDL.h>
-#include <map>
-#include <string>
-#include "tinyxml2.h"
+#include <unordered_map>
 
 namespace Modwin
 {
-
 	class TextureManager
 	{
-
 	public:
-
 		static TextureManager* GetInstance();
 
-		bool Load(std::string&& name, std::string filePath);
-
-		void Remove(std::string id);
-
+		bool Load(const std::string& name, const std::string& directory);
+		void Destroy(const std::string& id);
 		void Clean();
 
-		void Draw(const std::string& textureID, float x, float y, float w, float h, SDL_FlipMode flipMode = SDL_FLIP_NONE);
-
-		void DrawFrame(const std::string& textureID, float x, float y, float w, float h, int spriteRow, int frame, SDL_FlipMode flip);
-
-		void DrawTile(std::string id, int tileWidth, int x, int y, int row, int frame, SDL_FlipMode flipMode = SDL_FLIP_NONE);
-
-		void Destroy(std::string id);
+		void Draw(const std::string& textureId, float x, float y, float width, float height,
+			SDL_FlipMode flipMode = SDL_FLIP_NONE);
+		void DrawFrame(const std::string& textureId, float x, float y, float width, float height,
+			int spriteRow, int frame, SDL_FlipMode flipMode);
+		void DrawTile(const std::string& textureId, int tileWidth, int x, int y, int row, int frame,
+			SDL_FlipMode flipMode = SDL_FLIP_NONE);
 
 		~TextureManager() = default;
 
-
 	private:
-		TextureManager(){};
-		std::map<std::string, SDL_Texture*> m_Textures;
-		static TextureManager* s_INSTANCE;
+		TextureManager() = default;
+		[[nodiscard]] SDL_Texture* FindTexture(const std::string& id) const;
+
+		std::unordered_map<std::string, SDL_Texture*> m_Textures;
 	};
-
-} // Modwin
-
-#endif //WINTHER_ENGINE_TEXTUREMANAGER_H
+}

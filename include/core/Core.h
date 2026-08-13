@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#ifndef CPROG_WINTHER_ENGINE_CORE_H
+#ifndef MODWIN_ENGINE_CORE_H
 
 
-#define CPROG_WINTHER_ENGINE_CORE_H
+#define MODWIN_ENGINE_CORE_H
 #include "Engine.h"
 
-#endif //CPROG_WINTHER_ENGINE_CORE_H
+#endif //MODWIN_ENGINE_CORE_H

@@ -8,6 +8,7 @@
 #include <sstream>
 #include <istream>
 #include "Log.h"
+#include "core/ResourcePaths.h"
 
 namespace Modwin
 {
@@ -35,7 +36,8 @@ namespace Modwin
 
 	bool MapParser::LoadMap(const std::string& id, const std::string& fileName)
 	{
-		return Parse("1", std::string("C:/Users/komvu/CLionProject/winther-engine/resources/maps/map.tmx"));
+		const auto mapPath = GetResourcePath("maps") / (fileName + ".tmx");
+		return Parse(id, mapPath.string());
 	}
 
 	/**
@@ -181,11 +183,6 @@ namespace Modwin
 //			}
 //		}
 		return nullptr;
-	}
-
-	void MapParser::ParseXMLAttribute(std::string attr)
-	{
-
 	}
 
 }

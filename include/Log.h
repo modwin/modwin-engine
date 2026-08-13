@@ -2,11 +2,10 @@
 // Created by komvu on 2024-12-10.
 //
 
-#ifndef WINTHER_ENGINE_LOG_H
-#define WINTHER_ENGINE_LOG_H
+#ifndef MODWIN_ENGINE_LOG_H
+#define MODWIN_ENGINE_LOG_H
 
-#include "core/Engine.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include <memory>
 #include <spdlog/logger.h>
 
 namespace Modwin

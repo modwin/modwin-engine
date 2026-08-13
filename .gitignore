@@ -27,3 +27,5 @@ CMakeUserPresets.json
 
 # Runtime UI state
 imgui.ini
+external/imgui/*.h
+external/imgui/*.cpp

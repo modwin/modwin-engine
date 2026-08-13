@@ -1,10 +1,3 @@
-//
-// Created by komvu on 2024-12-06.
-//
+#pragma once
 
-#ifndef CPROG_WINTHER_ENGINE_WINTHER_H
-#define CPROG_WINTHER_ENGINE_WINTHER_H
-
-
-
-#endif //CPROG_WINTHER_ENGINE_WINTHER_H
+#include "core/Engine.h"

@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-02.
 //
 
-#ifndef WINTHER_ENGINE_RIGIDBODY_H
-#define WINTHER_ENGINE_RIGIDBODY_H
+#ifndef MODWIN_ENGINE_RIGIDBODY_H
+#define MODWIN_ENGINE_RIGIDBODY_H
 
 #include "Vector2D.h"
 
@@ -65,4 +65,4 @@ namespace Modwin{
 
 
 
-#endif //WINTHER_ENGINE_RIGIDBODY_H
+#endif //MODWIN_ENGINE_RIGIDBODY_H

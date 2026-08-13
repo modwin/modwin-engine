@@ -2,8 +2,8 @@
 // Created by komvu on 2025-01-04.
 //
 
-#ifndef WINTHER_ENGINE_TILELAYER_H
-#define WINTHER_ENGINE_TILELAYER_H
+#ifndef MODWIN_ENGINE_TILELAYER_H
+#define MODWIN_ENGINE_TILELAYER_H
 
 #include <graphics/SurfaceLayer.h>
 #include <utility>
@@ -40,16 +40,15 @@ namespace Modwin
 
 		int CalculateTileForCorruption(int row, int column);
 		bool ContainsTile(int row, int tileId);
-		inline TileVec2D GetTileVec(){return m_TileVec2D;}
-		inline TilesetVec GetTileSetVec(){return m_Tilesets;}
+		const TileVec2D& GetTileVec() const noexcept { return m_TileVec2D; }
+		const TilesetVec& GetTileSetVec() const noexcept { return m_Tilesets; }
 	private:
 		int m_TileWidth;
 		int m_ColumnCount, m_RowCount;
 		TileVec2D m_TileVec2D;
 		TilesetVec m_Tilesets;
-		std::vector<int> m_UsedTiles;
 	};
 
 } // Modwin
 
-#endif //WINTHER_ENGINE_TILELAYER_H
+#endif //MODWIN_ENGINE_TILELAYER_H
