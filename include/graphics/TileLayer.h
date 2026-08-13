@@ -1,12 +1,7 @@
-//
-// Created by komvu on 2025-01-04.
-//
-
 #ifndef MODWIN_ENGINE_TILELAYER_H
 #define MODWIN_ENGINE_TILELAYER_H
 
 #include <graphics/SurfaceLayer.h>
-#include <utility>
 #include <vector>
 #include <string>
 

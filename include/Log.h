@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-10.
-//
-
 #ifndef MODWIN_ENGINE_LOG_H
 #define MODWIN_ENGINE_LOG_H
 

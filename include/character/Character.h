@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-28.
-//
-
 #ifndef MODWIN_ENGINE_CHARACTER_H
 #define MODWIN_ENGINE_CHARACTER_H
 

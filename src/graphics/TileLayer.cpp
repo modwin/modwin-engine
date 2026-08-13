@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-04.
-//
-
 #include "graphics/TileLayer.h"
 #include <graphics/TextureManager.h>
 

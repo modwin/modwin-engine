@@ -1,5 +1,4 @@
 #include "core/ResourcePaths.h"
-
 #include <SDL3/SDL_filesystem.h>
 
 namespace Modwin

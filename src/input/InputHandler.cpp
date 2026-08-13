@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-03.
-//
-
 #include "input/InputHandler.h"
 #include <imgui_impl_sdl3.h>
 

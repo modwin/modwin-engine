@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-06.
-//
-
 #pragma once
 #ifndef MODWIN_ENGINE_CORE_H
 

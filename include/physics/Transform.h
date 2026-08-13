@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2024-12-27.
-//
-
 #ifndef MODWIN_ENGINE_TRANSFORM_H
 #define MODWIN_ENGINE_TRANSFORM_H
 
