@@ -8,6 +8,7 @@
 #include <SDL3/SDL.h>
 #include <physics/RigidBody.h>
 #include <input/InputHandler.h>
+#include <cfg/Config.h>
 
 
 
@@ -19,23 +20,20 @@ namespace Modwin{
 
 		Player(std::string tag, size_t id, Properties properties) : Character(std::move(tag), id, properties)
 		{
-			m_Config = new Config;
-			m_Properties = properties;
-			m_Animation = new Animation();
+			m_Animation = std::make_unique<Animation>();
 			m_Animation->SetValues(properties.m_TextureID, 2, 2, 120, properties.flipMode);
-			m_RigidBody = new RigidBody();
+			m_RigidBody = std::make_unique<RigidBody>();
 			m_RigidBody->ApplyFriction({0, 0});
-			m_Transform = new Transform(340, 256);
 
 		};
-		~Player() override {};
+		~Player() override = default;
 		void Draw() override;
 		void Update(float dt) override;
 		bool IsWalkingLeft() const;
 		bool IsWalkingRight() const;
 
 
-		Config* m_Config;
+		Config m_Config;
 	};
 
 }
