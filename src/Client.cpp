@@ -1,17 +1,9 @@
-//
-// Created by komvu on 2024-12-06.
-//
-
-
 #include "core/Engine.h"
 
 namespace Modwin
 {
 
 	#include <SDL3/SDL_main.h>
-
-
-
 
 	int main(int argc, char** argv)
 	{
