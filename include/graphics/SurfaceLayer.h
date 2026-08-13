@@ -8,7 +8,7 @@ namespace Modwin
 	{
 	public:
 		SurfaceLayer(){};
-		~SurfaceLayer(){};
+		virtual ~SurfaceLayer(){};
 
 		virtual void Update()=0;
 		virtual void Render()=0;
