@@ -21,11 +21,11 @@ namespace Modwin
 		void SetMoveLeftKey(SDL_Scancode sdlKey);
 		void SetAttackKey(SDL_Scancode sdlKey);
 		void SetMoveDownKey(SDL_Scancode sdlKey);
-		SDL_Scancode GetMoveUpKey();
-		SDL_Scancode GetMoveRightKey();
-		SDL_Scancode GetMoveLeftKey();
-		SDL_Scancode GetAttackKey();
-		SDL_Scancode GetMoveDownKey();
+		SDL_Scancode GetMoveUpKey() const;
+		SDL_Scancode GetMoveRightKey() const;
+		SDL_Scancode GetMoveLeftKey() const;
+		SDL_Scancode GetAttackKey() const;
+		SDL_Scancode GetMoveDownKey() const;
 
 
 		std::map<std::string, SDL_Scancode> m_KeyMap;

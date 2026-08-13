@@ -1,7 +1,3 @@
-//
-// Created by komvu on 2025-01-03.
-//
-
 #include "cfg/Config.h"
 
 namespace Modwin
@@ -44,27 +40,27 @@ namespace Modwin
 		m_KeyMap.insert(std::pair<std::string, SDL_Scancode>("MOVE_DOWN", sdlKey));
 	}
 
-	SDL_Scancode Config::GetMoveUpKey()
+	SDL_Scancode Config::GetMoveUpKey() const
 	{
 		return m_KeyMap.at("MOVE_UP");
 	}
 
-	SDL_Scancode Config::GetMoveRightKey()
+	SDL_Scancode Config::GetMoveRightKey() const
 	{
 		return m_KeyMap.at("MOVE_RIGHT");
 	}
 
-	SDL_Scancode Config::GetMoveLeftKey()
+	SDL_Scancode Config::GetMoveLeftKey() const
 	{
 		return m_KeyMap.at("MOVE_LEFT");
 	}
 
-	SDL_Scancode Config::GetAttackKey()
+	SDL_Scancode Config::GetAttackKey() const
 	{
 		return m_KeyMap.at("ATTACK");
 	}
 
-	SDL_Scancode Config::GetMoveDownKey()
+	SDL_Scancode Config::GetMoveDownKey() const
 	{
 		return m_KeyMap.at("MOVE_DOWN");
 	}
