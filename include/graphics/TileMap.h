@@ -4,6 +4,8 @@
 #include <graphics/SurfaceLayer.h>
 #include <vector>
 
+#include "TileLayer.h"
+
 namespace Modwin
 {
 	class TileMap
@@ -26,9 +28,9 @@ namespace Modwin
 				layer->Update();
 			}
 		}
-
-		inline std::vector<SurfaceLayer*> GetSurfaceLayers(){return m_SurfaceLayers;}
-
+		std::vector<Tileset> tilesets;
+		std::vector<TileLayer> tileLayers;
+		std::vector<SurfaceLayer*> GetSurfaceLayers(){return m_SurfaceLayers;}
 	private:
 		friend class MapParser;
 		std::vector<SurfaceLayer*> m_SurfaceLayers;
