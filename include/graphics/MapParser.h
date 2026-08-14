@@ -19,8 +19,10 @@ namespace Modwin
 		TileMap* GetTileMap(const std::string& id){return m_Map[id];}
 
 		bool Parse(const std::string& id, const std::string& source);
-		Tileset ParseTileSet(tinyxml2::XMLElement* tilesetElement);
-		TileLayer* ParseTileLayer(tinyxml2::XMLElement* layerElement, const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount);
+
+		static Tileset ParseTileSet(tinyxml2::XMLElement* tilesetElement);
+
+		static TileLayer* ParseTileLayer(tinyxml2::XMLElement* layerElement, const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount);
 
 	private:
 		MapParser(){};
