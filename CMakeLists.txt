@@ -66,6 +66,10 @@ add_library(modwin_engine STATIC
     src/physics/Transform.cpp
     src/physics/Vector2D.cpp
     src/time/Time.cpp
+    src/editor/EditorState.cpp
+    src/editor/EditorUI.cpp
+    src/editor/EditorCamera.cpp
+    src/editor/EditorTool.cpp
 )
 
 add_library(modwin::engine ALIAS modwin_engine)

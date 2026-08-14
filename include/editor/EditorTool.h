@@ -1,0 +1,10 @@
+#ifndef MODWIN_ENGINE_EDITORTOOL_H
+#define MODWIN_ENGINE_EDITORTOOL_H
+
+
+class EditorTool
+{
+};
+
+
+#endif //MODWIN_ENGINE_EDITORTOOL_H
