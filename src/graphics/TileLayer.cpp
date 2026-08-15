@@ -86,7 +86,7 @@ namespace Modwin
 		return std::find(tiles.begin(), tiles.end(), tileId) != tiles.end();
 	}
 
-	int TileLayer::CalculateTileForCorruption(int row, int column)
+	int TileLayer::CalculateTileForCorruption(int row, int column) const
 	{
 		// Check bounds to avoid out-of-bounds access
 		auto isValidIndex = [this](int r, int c) {

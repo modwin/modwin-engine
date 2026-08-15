@@ -5,15 +5,15 @@
 #include <istream>
 #include "Log.h"
 #include "core/ResourcePaths.h"
+#include <optional>
 
 namespace Modwin
 {
-
 	MapParser* MapParser::s_INSTANCE = nullptr;
 
-	MapParser* Modwin::MapParser::GetInstance()
+	MapParser* MapParser::GetInstance()
 	{
-		if(s_INSTANCE == nullptr)
+		if (s_INSTANCE == nullptr)
 		{
 			s_INSTANCE = new MapParser();
 		}
@@ -23,7 +23,7 @@ namespace Modwin
 	void MapParser::Clean()
 	{
 		std::map<std::string, TileMap*>::iterator iter;
-		for(iter = m_Map.begin(); iter != m_Map.end(); iter++)
+		for (iter = m_Map.begin(); iter != m_Map.end(); iter++)
 		{
 			iter->second = nullptr;
 		}
@@ -45,13 +45,13 @@ namespace Modwin
 	{
 		tinyxml2::XMLDocument xmlDocument;
 		xmlDocument.LoadFile(source.c_str());
-		if(xmlDocument.Error())
+		if (xmlDocument.Error())
 		{
 			Log::GetCoreLogger()->info(xmlDocument.ErrorStr());
 		}
 
-		tinyxml2::XMLElement* rootElement =xmlDocument.RootElement();
-		if(rootElement == nullptr)
+		tinyxml2::XMLElement* rootElement = xmlDocument.RootElement();
+		if (rootElement == nullptr)
 		{
 			Log::GetCoreLogger()->info("MapParser: rootElement was null.");
 			return false;
@@ -65,46 +65,40 @@ namespace Modwin
 		tileWidth = rootElement->FindAttribute("tilewidth")->IntValue();
 
 		TilesetVec tilesets;
-		TilesetVec tilesets1;
-		tinyxml2::XMLElement* e = rootElement->FirstChildElement();
+		const tinyxml2::XMLElement* e = rootElement->FirstChildElement();
 
-		while(e)
+		for (const tinyxml2::XMLElement* element =
+				     e;
+		     element != nullptr;
+		     element = element->NextSiblingElement("tileset"))
 		{
-			if(e->Value() == std::string("tileset"))
-			{
-				tilesets1.push_back(ParseTileSet(e));
-			}
-			e = e->NextSiblingElement();
+			auto tileset = ParseTileSet(element);
+
+			if (!tileset.has_value()) return false;
+			tilesets.push_back(std::move(*tileset));
 		}
-//		for(tinyxml2::XMLElement* e = rootElement->FirstChildElement(); e!= nullptr; e = rootElement->NextSiblingElement())
-//		{
-//			if(e->Value() == std::string("tileset"))
-//			{
-//				tilesets.push_back(ParseTileSet(e));
-//			}
-//		}
 
 		auto* tileMap = new TileMap();
 		TileLayer* tileLayer = nullptr;
 		e = rootElement->FirstChildElement();
-		while(e)
+		while (e)
 		{
-			if(e->Value() == std::string("layer"))
+			if (e->Value() == std::string("layer"))
 			{
-				tileLayer = ParseTileLayer(e, tilesets1, tileWidth, rowCount, columnCount);
+				tileLayer = ParseTileLayer(e, tilesets, tileWidth, rowCount, columnCount);
 				tileMap->m_SurfaceLayers.push_back(tileLayer);
 			}
 			e = e->NextSiblingElement();
 		}
 
-		if(tileMap->m_SurfaceLayers.empty())
+		if (tileMap->m_SurfaceLayers.empty())
 		{
 			Log::GetCoreLogger()->info("SurfaceLayers<vec> är tom!");
-//			return false;
+			//			return false;
 		}
 
 		m_Map[id] = tileMap;
-		if(m_Map[id] == nullptr)
+		if (m_Map[id] == nullptr)
 		{
 			std::cout << "Map is null!" << std::endl;
 			return false;
@@ -112,38 +106,64 @@ namespace Modwin
 		return true;
 	}
 
-	Tileset MapParser::ParseTileSet(tinyxml2::XMLElement* tilesetElement)
+	std::optional<Tileset> MapParser::ParseTileSet(const tinyxml2::XMLElement* tilesetElement)
 	{
+		const char* name = tilesetElement->Attribute("name");
+		const tinyxml2::XMLElement* imageElement = tilesetElement->FirstChildElement("image");
+
+		if (imageElement == nullptr) return std::nullopt;
+
+		const char* source = imageElement->Attribute("source");
+		unsigned int firstId = 0;
+		int tileCount, columnCount, tileWidth = 0;
+		const bool valid =
+				name != nullptr &&
+				source != nullptr &&
+				tilesetElement->QueryUnsignedAttribute(
+					"firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute(
+					"tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute(
+					"columns", &columnCount) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute(
+					"tilewidth", &tileWidth) == tinyxml2::XML_SUCCESS &&
+				tileCount > 0 &&
+				columnCount > 0 &&
+				tileWidth > 0;
+
+		if (!valid)
+		{
+			Log::GetCoreLogger()->info("Map contains an invalid tileset definition.");
+			return std::nullopt;
+		}
 		Tileset tileset;
-		tileset.name = tilesetElement->FindAttribute("name")->Value();
-		tileset.firstId = tilesetElement->FindAttribute("firstgid")->IntValue();
+		tileset.name = name;
+		tileset.source = source;
+		tileset.tileCount = tileCount;
+		tileset.columnCount = columnCount;
+		tileset.rowCount = tileCount / columnCount;
+		tileset.tileWidth = tileWidth;
+		tileset.firstId = firstId;
+		tileset.lastId = (tileset.firstId + static_cast<TileGid>(tileset.tileCount) - 1);
 
-		tileset.tileCount = tilesetElement->FindAttribute("tilecount")->IntValue();
-		tileset.lastId = (tileset.firstId - tileset.tileCount) - 1;
-		tileset.columnCount = tilesetElement->FindAttribute("columns")->IntValue();
-		tileset.rowCount = (tileset.tileCount) / tileset.columnCount;
-		tileset.tileWidth = tilesetElement->FindAttribute("tilewidth")->IntValue();
-
-		tileset.source = tilesetElement->FirstChildElement()->FindAttribute("source")->Value();
 		return tileset;
-
 	}
 
 	TileLayer*
 	MapParser::ParseTileLayer(tinyxml2::XMLElement* layerElement,
-			const TilesetVec& tilesetVec, int tileWidth, int rowCount,int columnCount)
+		const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount)
 	{
 		tinyxml2::XMLElement* data = layerElement->FirstChildElement();
-		while(data)
+		while (data)
 		{
-			if(data->Value() == std::string("data"))
+			if (data->Value() == std::string("data"))
 			{
 				break;
 			}
 			data = data->NextSiblingElement();
 		}
 
-		if(data == nullptr)
+		if (data == nullptr)
 		{
 			return nullptr;
 		}
@@ -154,33 +174,32 @@ namespace Modwin
 
 		TileVec2D tileVec(rowCount, std::vector<int>(columnCount, 0));
 
-		for(int row = 0; row < rowCount; row++)
+		for (int row = 0; row < rowCount; row++)
 		{
-			for(int column = 0; column < columnCount; column++)
+			for (int column = 0; column < columnCount; column++)
 			{
 				std::getline(iss, id, ',');
 				std::stringstream converter(id);
 				converter >> tileVec[row][column];
-				if(iss.bad())
+				if (iss.bad())
 				{
 					break;
 				}
 			}
 		}
-		return new TileLayer(tileWidth, rowCount,columnCount, tileVec, tilesetVec);
-//
-//
-//		for(tinyxml2::XMLElement* e = layerElement->FirstChildElement(); e!= nullptr;e->NextSibling())
-//		{
-//			if(e->Value() == std::string("data"))
-//			{
-//				dataElement = e;
-//				break;
-//			}
-//		}
+		return new TileLayer(tileWidth, rowCount, columnCount, tileVec, tilesetVec);
+		//
+		//
+		//		for(tinyxml2::XMLElement* e = layerElement->FirstChildElement(); e!= nullptr;e->NextSibling())
+		//		{
+		//			if(e->Value() == std::string("data"))
+		//			{
+		//				dataElement = e;
+		//				break;
+		//			}
+		//		}
 		return nullptr;
 	}
-
 }
 
 

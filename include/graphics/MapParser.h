@@ -2,6 +2,7 @@
 #define MODWIN_ENGINE_MAPPARSER_H
 
 #include <map>
+#include <optional>
 #include <graphics/TileMap.h>
 #include <graphics/TileLayer.h>
 #include <tinyxml2.h>
@@ -20,7 +21,7 @@ namespace Modwin
 
 		bool Parse(const std::string& id, const std::string& source);
 
-		static Tileset ParseTileSet(tinyxml2::XMLElement* tilesetElement);
+		static std::optional<Tileset> ParseTileSet(const tinyxml2::XMLElement* tilesetElement);
 
 		static TileLayer* ParseTileLayer(tinyxml2::XMLElement* layerElement, const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount);
 
