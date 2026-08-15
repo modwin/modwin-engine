@@ -75,6 +75,14 @@ namespace Modwin
 
 	}
 
+	bool TileLayer::IsInBounds(int column, int row) const noexcept
+	{
+		return column >= 0 &&
+			column < m_Width &&
+				row >= 0 &&
+					row < m_Height;
+	}
+
 	bool TileLayer::ContainsTile(int row, int tileId)
 	{
 		if (row < 0 || row >= m_RowCount)

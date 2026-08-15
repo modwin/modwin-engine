@@ -46,7 +46,10 @@ namespace Modwin
 			[[nodiscard]] const TileVec2D& GetTileVec() const noexcept { return m_TileVec2D; }
 			[[nodiscard]] const TilesetVec& GetTileSetVec() const noexcept { return m_Tilesets; }
 	private:
+			[[nodiscard]] std::size_t GetIndex(int column, int row) const;
 
+			std::string m_Name;
+			int m_TileWidth = 0;
 			int m_Width, m_Height = 0;
 			std::vector<TileGid> m_Tiles;
 			int m_ColumnCount, m_RowCount;
