@@ -83,6 +83,21 @@ namespace Modwin
 					row < m_Height;
 	}
 
+	int TileLayer::GetWidth() const noexcept
+	{
+		return m_Width;
+	}
+
+	int TileLayer::GetHeight() const noexcept
+	{
+		return m_Height;
+	}
+
+	const std::string& TileLayer::GetName() const noexcept
+	{
+		return m_Name;
+	}
+
 	std::size_t TileLayer::GetIndex(
 	const int column, const int row) const
 	{

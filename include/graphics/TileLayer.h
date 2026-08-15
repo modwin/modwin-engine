@@ -36,15 +36,16 @@ namespace Modwin
 			void Render() override;
 			void Update() override;
 
-			bool IsInBounds(int column, int row) const noexcept;
-			int GetWidth() const noexcept;
-			int GetHeight() const noexcept;
-			const std::string& GetName() const noexcept;
+			[[nodiscard]] bool IsInBounds(int column, int row) const noexcept;
+			[[nodiscard]] int GetWidth() const noexcept;
+			[[nodiscard]] int GetHeight() const noexcept;
+			[[nodiscard]] const std::string& GetName() const noexcept;
 
 			[[nodiscard]] int CalculateTileForCorruption(int row, int column) const;
 			[[nodiscard]] bool ContainsTile(int row, int tileId) const;
 			[[nodiscard]] const TileVec2D& GetTileVec() const noexcept { return m_TileVec2D; }
 			[[nodiscard]] const TilesetVec& GetTileSetVec() const noexcept { return m_Tilesets; }
+
 	private:
 			[[nodiscard]] std::size_t GetIndex(int column, int row) const;
 
