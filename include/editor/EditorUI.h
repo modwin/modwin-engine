@@ -1,0 +1,10 @@
+#ifndef MODWIN_ENGINE_EDITORUI_H
+#define MODWIN_ENGINE_EDITORUI_H
+
+
+class EditorUI
+{
+};
+
+
+#endif //MODWIN_ENGINE_EDITORUI_H

@@ -28,10 +28,7 @@ namespace Modwin
 		MapParser(){};
 		std::map<std::string, TileMap*> m_Map;
 		static MapParser* s_INSTANCE;
-
-
 	};
-
 }
 
 

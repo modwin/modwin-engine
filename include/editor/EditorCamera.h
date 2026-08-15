@@ -1,0 +1,10 @@
+#ifndef MODWIN_ENGINE_EDITORCAMERA_H
+#define MODWIN_ENGINE_EDITORCAMERA_H
+
+
+class EditorCamera
+{
+};
+
+
+#endif //MODWIN_ENGINE_EDITORCAMERA_H
