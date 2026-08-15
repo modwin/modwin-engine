@@ -42,7 +42,7 @@ namespace Modwin
 			const std::string& GetName() const noexcept;
 
 			[[nodiscard]] int CalculateTileForCorruption(int row, int column) const;
-			bool ContainsTile(int row, int tileId);
+			[[nodiscard]] bool ContainsTile(int row, int tileId) const;
 			[[nodiscard]] const TileVec2D& GetTileVec() const noexcept { return m_TileVec2D; }
 			[[nodiscard]] const TilesetVec& GetTileSetVec() const noexcept { return m_Tilesets; }
 	private:

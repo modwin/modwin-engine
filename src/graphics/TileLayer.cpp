@@ -83,7 +83,15 @@ namespace Modwin
 					row < m_Height;
 	}
 
-	bool TileLayer::ContainsTile(int row, int tileId)
+	std::size_t TileLayer::GetIndex(
+	const int column, const int row) const
+	{
+		return static_cast<std::size_t>(row) *
+				   static_cast<std::size_t>(m_Width) +
+			   static_cast<std::size_t>(column);
+	}
+
+	bool TileLayer::ContainsTile(const int row, const int tileId) const
 	{
 		if (row < 0 || row >= m_RowCount)
 		{
