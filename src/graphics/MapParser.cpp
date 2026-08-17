@@ -36,6 +36,17 @@ namespace Modwin
 		return Parse(id, mapPath.string());
 	}
 
+	TileMap* MapParser::GetTileMap(const std::string& id) noexcept
+	{
+		const auto map = m_Map.find(id);
+		if (map != m_Map.end())
+		{
+			return nullptr;
+		}
+
+		return map->second;
+	}
+
 	/**
 	 * Funktion för att läsa XML-filen och hämta datan från den för att
 	 * sedan kunna mata in värdena i nästa funktion.
@@ -65,7 +76,7 @@ namespace Modwin
 		tileWidth = rootElement->FindAttribute("tilewidth")->IntValue();
 
 		TilesetVec tilesets;
-		const tinyxml2::XMLElement* e = rootElement->FirstChildElement();
+		tinyxml2::XMLElement* e = rootElement->FirstChildElement();
 
 		for (const tinyxml2::XMLElement* element =
 				     e;
