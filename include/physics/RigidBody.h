@@ -4,7 +4,7 @@
 #include "Vector2D.h"
 
 #define MASS_MULTIPLE 1.0f
-#define GRAVITATIONAL_FORCE 9.8
+#define GRAVITATIONAL_FORCE 9.82
 
 namespace Modwin{
 
