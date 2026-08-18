@@ -2,7 +2,6 @@
 
 #include "Log.h"
 #include "core/ResourcePaths.h"
-#include "graphics/TextureManager.h"
 
 #include <cstdint>
 #include <exception>
@@ -39,30 +38,48 @@ namespace Modwin
 
 	bool MapParser::Parse(const std::string& id, const std::string& source)
 	{
+		auto tileMap = LoadFromFile(source);
+		if (!tileMap.has_value())
+		{
+			return false;
+		}
+
+		m_Maps.insert_or_assign(id, std::make_unique<TileMap>(std::move(*tileMap)));
+		return true;
+	}
+
+	std::optional<TileMap> MapParser::LoadFromFile(const std::filesystem::path& source)
+	{
 		tinyxml2::XMLDocument xmlDocument;
-		if (xmlDocument.LoadFile(source.c_str()) != tinyxml2::XML_SUCCESS)
+		if (xmlDocument.LoadFile(source.string().c_str()) != tinyxml2::XML_SUCCESS)
 		{
 			Log::GetCoreLogger()->error(
-				"Could not load map '{}': {}", source, xmlDocument.ErrorStr());
-			return false;
+				"Could not load map '{}': {}", source.string(), xmlDocument.ErrorStr());
+			return std::nullopt;
 		}
 
 		const tinyxml2::XMLElement* rootElement = xmlDocument.RootElement();
 		if (rootElement == nullptr)
 		{
-			Log::GetCoreLogger()->error("Map '{}' has no root element.", source);
-			return false;
+			Log::GetCoreLogger()->error("Map '{}' has no root element.", source.string());
+			return std::nullopt;
 		}
 
+		int mapWidth = 0;
+		int mapHeight = 0;
 		int mapTileWidth = 0;
-		if (rootElement->QueryIntAttribute("tilewidth", &mapTileWidth) != tinyxml2::XML_SUCCESS ||
-			mapTileWidth <= 0)
+		int mapTileHeight = 0;
+		if (rootElement->QueryIntAttribute("width", &mapWidth) != tinyxml2::XML_SUCCESS ||
+			rootElement->QueryIntAttribute("height", &mapHeight) != tinyxml2::XML_SUCCESS ||
+			rootElement->QueryIntAttribute("tilewidth", &mapTileWidth) != tinyxml2::XML_SUCCESS ||
+			rootElement->QueryIntAttribute("tileheight", &mapTileHeight) != tinyxml2::XML_SUCCESS ||
+			mapWidth <= 0 || mapHeight <= 0 || mapTileWidth <= 0 || mapTileHeight <= 0)
 		{
-			Log::GetCoreLogger()->error("Map '{}' has an invalid tile width.", source);
-			return false;
+			Log::GetCoreLogger()->error("Map '{}' has invalid dimensions.", source.string());
+			return std::nullopt;
 		}
 
-		auto tileMap = std::make_unique<TileMap>();
+		TileMap tileMap(mapWidth, mapHeight, mapTileWidth, mapTileHeight);
 
 		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("tileset");
 			element != nullptr;
@@ -71,17 +88,10 @@ namespace Modwin
 			auto tileset = ParseTileSet(element);
 			if (!tileset.has_value())
 			{
-				return false;
+				return std::nullopt;
 			}
 
-			if (!TextureManager::GetInstance()->Load(tileset->name, "tiles"))
-			{
-				Log::GetCoreLogger()->error(
-					"Could not load tileset texture '{}'.", tileset->name);
-				return false;
-			}
-
-			tileMap->AddTileset(std::move(*tileset));
+			tileMap.AddTileset(std::move(*tileset));
 		}
 
 		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("layer");
@@ -91,20 +101,19 @@ namespace Modwin
 			auto layer = ParseTileLayer(element, mapTileWidth);
 			if (!layer.has_value())
 			{
-				return false;
+				return std::nullopt;
 			}
 
-			tileMap->AddLayer(std::move(*layer));
+			tileMap.AddLayer(std::move(*layer));
 		}
 
-		if (tileMap->GetLayers().empty())
+		if (tileMap.GetLayers().empty())
 		{
-			Log::GetCoreLogger()->error("Map '{}' contains no tile layers.", source);
-			return false;
+			Log::GetCoreLogger()->error("Map '{}' contains no tile layers.", source.string());
+			return std::nullopt;
 		}
 
-		m_Maps.insert_or_assign(id, std::move(tileMap));
-		return true;
+		return tileMap;
 	}
 
 	std::optional<Tileset> MapParser::ParseTileSet(

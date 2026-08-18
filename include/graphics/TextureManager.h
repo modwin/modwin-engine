@@ -18,7 +18,9 @@ namespace Modwin
 
 			void Clean();
 
-			bool LoadFromFile(const std::string& texture_id, const std::filesystem::path& path);
+			bool LoadFromFile(const std::string& textureId, const std::filesystem::path& path);
+
+			[[nodiscard]] SDL_Texture* GetTexture(const std::string& id) const noexcept;
 
 			void Draw(const std::string& textureId, float x, float y, float width, float height,
 				SDL_FlipMode flipMode = SDL_FLIP_NONE);

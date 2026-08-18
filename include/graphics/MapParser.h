@@ -3,6 +3,7 @@
 
 #include "graphics/TileMap.h"
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <optional>
@@ -20,6 +21,8 @@ namespace Modwin
 		bool LoadMap(const std::string& id, const std::string& fileName);
 		[[nodiscard]] TileMap* GetTileMap(const std::string& id) noexcept;
 		bool Parse(const std::string& id, const std::string& source);
+		[[nodiscard]] static std::optional<TileMap> LoadFromFile(
+			const std::filesystem::path& source);
 
 		static std::optional<Tileset> ParseTileSet(const tinyxml2::XMLElement* tilesetElement);
 		static std::optional<TileLayer> ParseTileLayer(
