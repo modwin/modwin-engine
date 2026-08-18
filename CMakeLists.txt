@@ -57,8 +57,11 @@ add_library(modwin_engine STATIC
     src/core/ResourcePaths.cpp
     src/entity/Entity.cpp
     src/entity/EntityManager.cpp
+    src/graphics/MapDocument.cpp
     src/graphics/MapParser.cpp
+    src/graphics/MapSerializer.cpp
     src/graphics/TextureManager.cpp
+    src/graphics/TileCoordinate.cpp
     src/graphics/TileLayer.cpp
     src/input/InputHandler.cpp
     src/physics/Physics.cpp
@@ -69,13 +72,7 @@ add_library(modwin_engine STATIC
     src/editor/EditorState.cpp
     src/editor/EditorUI.cpp
     src/editor/EditorCamera.cpp
-    src/editor/EditorTool.cpp
-        src/graphics/MapDocument.cpp
-        include/graphics/MapDocument.h
-        src/graphics/TileCoordinate.cpp
-        include/graphics/TileCoordinate.h
-        src/graphics/MapSerializer.cpp
-        include/graphics/MapSerializer.h
+    src/editor/EditorController.cpp
 )
 
 add_library(modwin::engine ALIAS modwin_engine)

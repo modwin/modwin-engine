@@ -9,11 +9,11 @@ namespace Modwin
 {
 	class EditorUI
 	{
-		public:
-			void Draw(EditorState & state, MapDocument & document, TextureManager & textures);
+	public:
+		void Draw(EditorState& state, MapDocument& document, TextureManager& textures) const;
 	};
 }
 
 
 
-#endif //MODWIN_ENGINE_EDITORUI_H
+#endif // MODWIN_ENGINE_EDITORUI_H
