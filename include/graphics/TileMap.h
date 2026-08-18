@@ -1,40 +1,61 @@
 #ifndef MODWIN_ENGINE_TILEMAP_H
 #define MODWIN_ENGINE_TILEMAP_H
 
-#include <graphics/SurfaceLayer.h>
-#include <vector>
+#include "graphics/TileLayer.h"
 
-#include "TileLayer.h"
+#include <utility>
+#include <vector>
 
 namespace Modwin
 {
 	class TileMap
 	{
 	public:
-		TileMap(){}
-
-		void Render()
+		void Render() const
 		{
-			for(auto layer : m_SurfaceLayers)
+			for (const auto& layer : m_Layers)
 			{
-				layer->Render();
+				layer.Render(m_Tilesets);
 			}
 		}
 
 		void Update()
 		{
-			for(auto layer : m_SurfaceLayers)
+			for (auto& layer : m_Layers)
 			{
-				layer->Update();
+				layer.Update();
 			}
 		}
-		std::vector<Tileset> tilesets;
-		std::vector<TileLayer> tileLayers;
-		std::vector<SurfaceLayer*> GetSurfaceLayers(){return m_SurfaceLayers;}
+
+		void AddTileset(Tileset tileset)
+		{
+			m_Tilesets.push_back(std::move(tileset));
+		}
+
+		void AddLayer(TileLayer layer)
+		{
+			m_Layers.push_back(std::move(layer));
+		}
+
+		[[nodiscard]] const TilesetVec& GetTilesets() const noexcept
+		{
+			return m_Tilesets;
+		}
+
+		[[nodiscard]] std::vector<TileLayer>& GetLayers() noexcept
+		{
+			return m_Layers;
+		}
+
+		[[nodiscard]] const std::vector<TileLayer>& GetLayers() const noexcept
+		{
+			return m_Layers;
+		}
+
 	private:
-		friend class MapParser;
-		std::vector<SurfaceLayer*> m_SurfaceLayers;
+		TilesetVec m_Tilesets;
+		std::vector<TileLayer> m_Layers;
 	};
 }
 
-#endif //MODWIN_ENGINE_TILEMAP_H
+#endif // MODWIN_ENGINE_TILEMAP_H

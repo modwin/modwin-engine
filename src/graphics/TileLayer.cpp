@@ -1,88 +1,131 @@
 #include "graphics/TileLayer.h"
-#include <graphics/TextureManager.h>
 
-#include <utility>
+#include "graphics/TextureManager.h"
+
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
 
 namespace Modwin
 {
-	TileLayer::TileLayer(int tileWidth, int rowCount, int columnCount, TileVec2D tileVec, TilesetVec tileSetVec)
-			: SurfaceLayer()
+	TileLayer::TileLayer(
+		std::string name,
+		const int width,
+		const int height,
+		const int tileWidth,
+		std::vector<TileGid> tiles)
+		: m_Name(std::move(name)),
+		  m_TileWidth(tileWidth),
+		  m_Width(width),
+		  m_Height(height),
+		  m_Tiles(std::move(tiles))
 	{
-		m_Width = tileWidth;
-		m_RowCount = rowCount;
-		m_ColumnCount = columnCount;
-		m_TileVec2D = std::move(tileVec);
-		m_Tilesets = std::move(tileSetVec);
-
-		for (const auto& tileset : m_Tilesets)
+		if (m_Width <= 0 || m_Height <= 0 || m_TileWidth <= 0)
 		{
-			TextureManager::GetInstance()->Load(tileset.name, "tiles");
+			throw std::invalid_argument("TileLayer dimensions must be positive.");
+		}
+
+		const auto expectedSize =
+			static_cast<std::size_t>(m_Width) * static_cast<std::size_t>(m_Height);
+		if (m_Tiles.size() != expectedSize)
+		{
+			throw std::invalid_argument("TileLayer tile count does not match its dimensions.");
 		}
 	}
 
-	void TileLayer::Render()
+	void TileLayer::Render(const TilesetVec& tilesets) const
 	{
-		for (int row = 0; row < m_RowCount; row++)
+		for (int row = 0; row < m_Height; ++row)
 		{
-			for (int column = 0; column < m_ColumnCount; column++)
+			for (int column = 0; column < m_Width; ++column)
 			{
-				int tileId = m_TileVec2D[row][column];
-
-				// Skip empty tiles
-
-
-				if(tileId == 0)
+				const TileGid rawGid = GetTile(column, row);
+				const TileGid tileId = rawGid & TileIdMask;
+				if (tileId == 0)
 				{
 					continue;
 				}
 
-				// Determine the correct tileset for the tileId
-				int tilesetIndex = -1;
-
-				for (unsigned int k = 0; k < m_Tilesets.size(); k++)
-				{
-					if (tileId >= m_Tilesets[k].firstId && tileId < m_Tilesets[k].firstId + m_Tilesets[k].tileCount)
+				const auto tileset = std::find_if(
+					tilesets.begin(), tilesets.end(),
+					[tileId](const Tileset& candidate)
 					{
-						tilesetIndex = k;
-						break;
-					}
-				}
+						return tileId >= candidate.firstId && tileId <= candidate.lastId;
+					});
 
-
-				if (tilesetIndex == -1)		// If no matching tileset is found, skip rendering
+				if (tileset == tilesets.end() || tileset->columnCount <= 0)
 				{
 					continue;
 				}
 
-				// Calculate the tile's position in the tileset
-				Tileset tileset = m_Tilesets[tilesetIndex];
-				int localTileId = tileId - tileset.firstId; 		// Normalize tileId to tileset range
-				int tileRow = localTileId / tileset.columnCount;
-				int tileColumn = localTileId % tileset.columnCount;
+				const TileGid localTileId = tileId - tileset->firstId;
+				const int sourceRow = static_cast<int>(localTileId) / tileset->columnCount;
+				const int sourceColumn = static_cast<int>(localTileId) % tileset->columnCount;
 
-				// Render the tile
-//				Properties p(SDL_FLIP_NONE, column * tileset.tileWidth, row * tileset.tileWidth, tileset.tileWidth, tileset.tileWidth, tileset.name, tileset.source);
-//				EntityManager::GetInstance()->AddEntity(tileset.name, p);
+				int flipFlags = SDL_FLIP_NONE;
+				if ((rawGid & FlipHorizontal) != 0)
+				{
+					flipFlags |= SDL_FLIP_HORIZONTAL;
+				}
+				if ((rawGid & FlipVertical) != 0)
+				{
+					flipFlags |= SDL_FLIP_VERTICAL;
+				}
+
+				// A diagonal Tiled flip also requires a 90-degree rotation. The raw
+				// flag remains in m_Tiles so it can be preserved when the map is saved.
 				TextureManager::GetInstance()->DrawTile(
-						tileset.name, tileset.tileWidth, column * tileset.tileWidth, row * tileset.tileWidth, tileRow, tileColumn);
+					tileset->name,
+					m_TileWidth,
+					column * m_TileWidth,
+					row * m_TileWidth,
+					sourceRow,
+					sourceColumn,
+					static_cast<SDL_FlipMode>(flipFlags));
 			}
 		}
 	}
 
 	void TileLayer::Update()
 	{
-
 	}
 
-	bool TileLayer::IsInBounds(int column, int row) const noexcept
+	bool TileLayer::IsInBounds(const int column, const int row) const noexcept
 	{
-		return column >= 0 &&
-			column < m_Width &&
-				row >= 0 &&
-					row < m_Height;
+		return column >= 0 && column < m_Width && row >= 0 && row < m_Height;
+	}
+
+	TileGid TileLayer::GetTile(const int column, const int row) const
+	{
+		if (!IsInBounds(column, row))
+		{
+			throw std::out_of_range("Tile coordinates are outside the layer.");
+		}
+
+		return m_Tiles[GetIndex(column, row)];
+	}
+
+	bool TileLayer::SetTile(const int column, const int row, const TileGid tileGid) noexcept
+	{
+		if (!IsInBounds(column, row))
+		{
+			return false;
+		}
+
+		m_Tiles[GetIndex(column, row)] = tileGid;
+		return true;
+	}
+
+	bool TileLayer::ContainsTile(const int row, const TileGid tileId) const noexcept
+	{
+		if (row < 0 || row >= m_Height)
+		{
+			return false;
+		}
+
+		const auto first = m_Tiles.begin() + static_cast<std::ptrdiff_t>(GetIndex(0, row));
+		const auto last = first + m_Width;
+		return std::find(first, last, tileId) != last;
 	}
 
 	int TileLayer::GetWidth() const noexcept
@@ -95,74 +138,24 @@ namespace Modwin
 		return m_Height;
 	}
 
+	int TileLayer::GetTileWidth() const noexcept
+	{
+		return m_TileWidth;
+	}
+
 	const std::string& TileLayer::GetName() const noexcept
 	{
 		return m_Name;
 	}
 
-	std::size_t TileLayer::GetIndex(
-	const int column, const int row) const
+	const std::vector<TileGid>& TileLayer::GetTiles() const noexcept
 	{
-		return static_cast<std::size_t>(row) *
-				   static_cast<std::size_t>(m_Width) +
-			   static_cast<std::size_t>(column);
+		return m_Tiles;
 	}
 
-	bool TileLayer::ContainsTile(const int row, const int tileId) const
+	std::size_t TileLayer::GetIndex(const int column, const int row) const noexcept
 	{
-		if (row < 0 || row >= m_RowCount)
-		{
-			return false;
-		}
-
-		const auto& tiles = m_TileVec2D[static_cast<std::size_t>(row)];
-		return std::find(tiles.begin(), tiles.end(), tileId) != tiles.end();
+		return static_cast<std::size_t>(row) * static_cast<std::size_t>(m_Width) +
+			static_cast<std::size_t>(column);
 	}
-
-	int TileLayer::CalculateTileForCorruption(int row, int column) const
-	{
-		// Check bounds to avoid out-of-bounds access
-		auto isValidIndex = [this](int r, int c) {
-			return r >= 0 && r < static_cast<int>(m_RowCount) && c >= 0 && c < static_cast<int>(m_ColumnCount);
-		};
-
-		// Check if a tileId is valid
-		auto isValidTileId = [](int tileId) {
-			return tileId > 1 && tileId < 219; // Adjust range as needed
-		};
-
-		// Default fallback tile
-		const int defaultTileId = 1; // Replace with a tileId that represents a generic or placeholder tile
-
-		// Search for the nearest valid neighbor
-		for (int radius = 1; radius <= 2; radius++) // Search within a 2-tile radius
-		{
-			for (int dr = -radius; dr <= radius; dr++)
-			{
-				for (int dc = -radius; dc <= radius; dc++)
-				{
-					int neighborRow = row + dr;
-					int neighborCol = column + dc;
-
-					if (isValidIndex(neighborRow, neighborCol))
-					{
-						int neighborTileId = m_TileVec2D[neighborRow][neighborCol];
-						if (isValidTileId(neighborTileId))
-						{
-							return neighborTileId; // Use the first valid neighboring tile found
-						}
-					}
-				}
-			}
-		}
-
-		// If no valid neighbor is found, return the default tile
-		return defaultTileId;
-	}
-	
-//	bool TileLayer::VerifyTileRowdata(){
-//
-//	}
-
-
-} // Modwin
+}

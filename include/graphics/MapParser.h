@@ -1,10 +1,12 @@
 #ifndef MODWIN_ENGINE_MAPPARSER_H
 #define MODWIN_ENGINE_MAPPARSER_H
 
+#include "graphics/TileMap.h"
+
 #include <map>
+#include <memory>
 #include <optional>
-#include <graphics/TileMap.h>
-#include <graphics/TileLayer.h>
+#include <string>
 #include <tinyxml2.h>
 
 namespace Modwin
@@ -16,21 +18,18 @@ namespace Modwin
 
 		void Clean();
 		bool LoadMap(const std::string& id, const std::string& fileName);
-
-		TileMap* GetTileMap(const std::string& id){return m_Map[id];}
-
+		[[nodiscard]] TileMap* GetTileMap(const std::string& id) noexcept;
 		bool Parse(const std::string& id, const std::string& source);
 
 		static std::optional<Tileset> ParseTileSet(const tinyxml2::XMLElement* tilesetElement);
-
-		static TileLayer* ParseTileLayer(tinyxml2::XMLElement* layerElement, const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount);
+		static std::optional<TileLayer> ParseTileLayer(
+			const tinyxml2::XMLElement* layerElement, int mapTileWidth);
 
 	private:
-		MapParser(){};
-		std::map<std::string, TileMap*> m_Map;
-		static MapParser* s_INSTANCE;
+		MapParser() = default;
+
+		std::map<std::string, std::unique_ptr<TileMap>> m_Maps;
 	};
 }
 
-
-#endif //MODWIN_ENGINE_MAPPARSER_H
+#endif // MODWIN_ENGINE_MAPPARSER_H

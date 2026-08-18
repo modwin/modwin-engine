@@ -1,33 +1,28 @@
 #include "graphics/MapParser.h"
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <istream>
+
 #include "Log.h"
 #include "core/ResourcePaths.h"
-#include <optional>
+#include "graphics/TextureManager.h"
+
+#include <cstdint>
+#include <exception>
+#include <limits>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace Modwin
 {
-	MapParser* MapParser::s_INSTANCE = nullptr;
-
 	MapParser* MapParser::GetInstance()
 	{
-		if (s_INSTANCE == nullptr)
-		{
-			s_INSTANCE = new MapParser();
-		}
-		return s_INSTANCE;
+		static MapParser instance;
+		return &instance;
 	}
 
 	void MapParser::Clean()
 	{
-		std::map<std::string, TileMap*>::iterator iter;
-		for (iter = m_Map.begin(); iter != m_Map.end(); iter++)
-		{
-			iter->second = nullptr;
-		}
-		m_Map.clear();
+		m_Maps.clear();
 	}
 
 	bool MapParser::LoadMap(const std::string& id, const std::string& fileName)
@@ -38,179 +33,204 @@ namespace Modwin
 
 	TileMap* MapParser::GetTileMap(const std::string& id) noexcept
 	{
-		const auto map = m_Map.find(id);
-		if (map != m_Map.end())
-		{
-			return nullptr;
-		}
-
-		return map->second;
+		const auto map = m_Maps.find(id);
+		return map != m_Maps.end() ? map->second.get() : nullptr;
 	}
 
-	/**
-	 * Funktion för att läsa XML-filen och hämta datan från den för att
-	 * sedan kunna mata in värdena i nästa funktion.
-	 *
-	 */
 	bool MapParser::Parse(const std::string& id, const std::string& source)
 	{
 		tinyxml2::XMLDocument xmlDocument;
-		xmlDocument.LoadFile(source.c_str());
-		if (xmlDocument.Error())
+		if (xmlDocument.LoadFile(source.c_str()) != tinyxml2::XML_SUCCESS)
 		{
-			Log::GetCoreLogger()->info(xmlDocument.ErrorStr());
+			Log::GetCoreLogger()->error(
+				"Could not load map '{}': {}", source, xmlDocument.ErrorStr());
+			return false;
 		}
 
-		tinyxml2::XMLElement* rootElement = xmlDocument.RootElement();
+		const tinyxml2::XMLElement* rootElement = xmlDocument.RootElement();
 		if (rootElement == nullptr)
 		{
-			Log::GetCoreLogger()->info("MapParser: rootElement was null.");
+			Log::GetCoreLogger()->error("Map '{}' has no root element.", source);
 			return false;
 		}
-		int rowCount, columnCount, tileWidth = 0;
 
-		// Hämtar attributen av varje element i XML-filen som behövs för
-		// att rendera texturerna.
-		columnCount = rootElement->FindAttribute("width")->IntValue();
-		rowCount = rootElement->FindAttribute("height")->IntValue();
-		tileWidth = rootElement->FindAttribute("tilewidth")->IntValue();
+		int mapTileWidth = 0;
+		if (rootElement->QueryIntAttribute("tilewidth", &mapTileWidth) != tinyxml2::XML_SUCCESS ||
+			mapTileWidth <= 0)
+		{
+			Log::GetCoreLogger()->error("Map '{}' has an invalid tile width.", source);
+			return false;
+		}
 
-		TilesetVec tilesets;
-		tinyxml2::XMLElement* e = rootElement->FirstChildElement();
+		auto tileMap = std::make_unique<TileMap>();
 
-		for (const tinyxml2::XMLElement* element =
-				     e;
-		     element != nullptr;
-		     element = element->NextSiblingElement("tileset"))
+		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("tileset");
+			element != nullptr;
+			element = element->NextSiblingElement("tileset"))
 		{
 			auto tileset = ParseTileSet(element);
-
-			if (!tileset.has_value()) return false;
-			tilesets.push_back(std::move(*tileset));
-		}
-
-		auto* tileMap = new TileMap();
-		TileLayer* tileLayer = nullptr;
-		e = rootElement->FirstChildElement();
-		while (e)
-		{
-			if (e->Value() == std::string("layer"))
+			if (!tileset.has_value())
 			{
-				tileLayer = ParseTileLayer(e, tilesets, tileWidth, rowCount, columnCount);
-				tileMap->m_SurfaceLayers.push_back(tileLayer);
+				return false;
 			}
-			e = e->NextSiblingElement();
+
+			if (!TextureManager::GetInstance()->Load(tileset->name, "tiles"))
+			{
+				Log::GetCoreLogger()->error(
+					"Could not load tileset texture '{}'.", tileset->name);
+				return false;
+			}
+
+			tileMap->AddTileset(std::move(*tileset));
 		}
 
-		if (tileMap->m_SurfaceLayers.empty())
+		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("layer");
+			element != nullptr;
+			element = element->NextSiblingElement("layer"))
 		{
-			Log::GetCoreLogger()->info("SurfaceLayers<vec> är tom!");
-			//			return false;
+			auto layer = ParseTileLayer(element, mapTileWidth);
+			if (!layer.has_value())
+			{
+				return false;
+			}
+
+			tileMap->AddLayer(std::move(*layer));
 		}
 
-		m_Map[id] = tileMap;
-		if (m_Map[id] == nullptr)
+		if (tileMap->GetLayers().empty())
 		{
-			std::cout << "Map is null!" << std::endl;
+			Log::GetCoreLogger()->error("Map '{}' contains no tile layers.", source);
 			return false;
 		}
+
+		m_Maps.insert_or_assign(id, std::move(tileMap));
 		return true;
 	}
 
-	std::optional<Tileset> MapParser::ParseTileSet(const tinyxml2::XMLElement* tilesetElement)
+	std::optional<Tileset> MapParser::ParseTileSet(
+		const tinyxml2::XMLElement* tilesetElement)
 	{
+		if (tilesetElement == nullptr)
+		{
+			return std::nullopt;
+		}
+
 		const char* name = tilesetElement->Attribute("name");
 		const tinyxml2::XMLElement* imageElement = tilesetElement->FirstChildElement("image");
+		const char* imageSource = imageElement != nullptr ? imageElement->Attribute("source") : nullptr;
 
-		if (imageElement == nullptr) return std::nullopt;
-
-		const char* source = imageElement->Attribute("source");
 		unsigned int firstId = 0;
-		int tileCount, columnCount, tileWidth = 0;
+		int tileCount = 0;
+		int columnCount = 0;
+		int tileWidth = 0;
+		int tileHeight = 0;
+
 		const bool valid =
-				name != nullptr &&
-				source != nullptr &&
-				tilesetElement->QueryUnsignedAttribute(
-					"firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
-				tilesetElement->QueryIntAttribute(
-					"tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
-				tilesetElement->QueryIntAttribute(
-					"columns", &columnCount) == tinyxml2::XML_SUCCESS &&
-				tilesetElement->QueryIntAttribute(
-					"tilewidth", &tileWidth) == tinyxml2::XML_SUCCESS &&
-				tileCount > 0 &&
-				columnCount > 0 &&
-				tileWidth > 0;
+			name != nullptr &&
+			imageSource != nullptr &&
+			tilesetElement->QueryUnsignedAttribute("firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
+			tilesetElement->QueryIntAttribute("tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
+			tilesetElement->QueryIntAttribute("columns", &columnCount) == tinyxml2::XML_SUCCESS &&
+			tilesetElement->QueryIntAttribute("tilewidth", &tileWidth) == tinyxml2::XML_SUCCESS &&
+			tilesetElement->QueryIntAttribute("tileheight", &tileHeight) == tinyxml2::XML_SUCCESS &&
+			tileCount > 0 && columnCount > 0 && tileWidth > 0 && tileHeight > 0;
 
 		if (!valid)
 		{
-			Log::GetCoreLogger()->info("Map contains an invalid tileset definition.");
+			Log::GetCoreLogger()->error("Map contains an invalid tileset definition.");
 			return std::nullopt;
 		}
+
 		Tileset tileset;
 		tileset.name = name;
-		tileset.source = source;
+		tileset.source = imageSource;
+		tileset.firstId = static_cast<TileGid>(firstId);
 		tileset.tileCount = tileCount;
 		tileset.columnCount = columnCount;
-		tileset.rowCount = tileCount / columnCount;
+		tileset.rowCount = (tileCount + columnCount - 1) / columnCount;
 		tileset.tileWidth = tileWidth;
-		tileset.firstId = firstId;
-		tileset.lastId = (tileset.firstId + static_cast<TileGid>(tileset.tileCount) - 1);
+		tileset.tileHeight = tileHeight;
+		tileset.lastId = tileset.firstId + static_cast<TileGid>(tileset.tileCount) - 1U;
 
 		return tileset;
 	}
 
-	TileLayer*
-	MapParser::ParseTileLayer(tinyxml2::XMLElement* layerElement,
-		const TilesetVec& tilesetVec, int tileWidth, int rowCount, int columnCount)
+	std::optional<TileLayer> MapParser::ParseTileLayer(
+		const tinyxml2::XMLElement* layerElement, const int mapTileWidth)
 	{
-		tinyxml2::XMLElement* data = layerElement->FirstChildElement();
-		while (data)
+		if (layerElement == nullptr)
 		{
-			if (data->Value() == std::string("data"))
-			{
-				break;
-			}
-			data = data->NextSiblingElement();
+			return std::nullopt;
 		}
 
-		if (data == nullptr)
+		const char* name = layerElement->Attribute("name");
+		int width = 0;
+		int height = 0;
+		if (name == nullptr ||
+			layerElement->QueryIntAttribute("width", &width) != tinyxml2::XML_SUCCESS ||
+			layerElement->QueryIntAttribute("height", &height) != tinyxml2::XML_SUCCESS ||
+			width <= 0 || height <= 0)
 		{
-			return nullptr;
+			Log::GetCoreLogger()->error("Map contains an invalid tile-layer definition.");
+			return std::nullopt;
 		}
 
-		std::string matrix(data->GetText());
-		std::istringstream iss(matrix);
-		std::string id;
-
-		TileVec2D tileVec(rowCount, std::vector<int>(columnCount, 0));
-
-		for (int row = 0; row < rowCount; row++)
+		const tinyxml2::XMLElement* dataElement = layerElement->FirstChildElement("data");
+		if (dataElement == nullptr || dataElement->GetText() == nullptr)
 		{
-			for (int column = 0; column < columnCount; column++)
+			Log::GetCoreLogger()->error("Tile layer '{}' contains no data.", name);
+			return std::nullopt;
+		}
+
+		const char* encoding = dataElement->Attribute("encoding");
+		if (encoding == nullptr || std::string(encoding) != "csv")
+		{
+			Log::GetCoreLogger()->error("Tile layer '{}' must use CSV encoding.", name);
+			return std::nullopt;
+		}
+
+		const auto expectedCount = static_cast<std::size_t>(width) * static_cast<std::size_t>(height);
+		std::vector<TileGid> tiles;
+		tiles.reserve(expectedCount);
+
+		std::istringstream stream(dataElement->GetText());
+		std::string token;
+		try
+		{
+			while (std::getline(stream, token, ','))
 			{
-				std::getline(iss, id, ',');
-				std::stringstream converter(id);
-				converter >> tileVec[row][column];
-				if (iss.bad())
+				const auto firstCharacter = token.find_first_not_of(" \t\r\n");
+				if (firstCharacter == std::string::npos)
 				{
-					break;
+					continue;
 				}
+
+				std::size_t parsedCharacters = 0;
+				const unsigned long long value = std::stoull(token, &parsedCharacters);
+				if (token.find_first_not_of(" \t\r\n", parsedCharacters) != std::string::npos ||
+					value > std::numeric_limits<TileGid>::max())
+				{
+					throw std::out_of_range("Invalid tile GID");
+				}
+
+				tiles.push_back(static_cast<TileGid>(value));
 			}
 		}
-		return new TileLayer(tileWidth, rowCount, columnCount, tileVec, tilesetVec);
-		//
-		//
-		//		for(tinyxml2::XMLElement* e = layerElement->FirstChildElement(); e!= nullptr;e->NextSibling())
-		//		{
-		//			if(e->Value() == std::string("data"))
-		//			{
-		//				dataElement = e;
-		//				break;
-		//			}
-		//		}
-		return nullptr;
+		catch (const std::exception& exception)
+		{
+			Log::GetCoreLogger()->error(
+				"Could not parse tile data for layer '{}': {}", name, exception.what());
+			return std::nullopt;
+		}
+
+		if (tiles.size() != expectedCount)
+		{
+			Log::GetCoreLogger()->error(
+				"Layer '{}' contains {} tiles, but its dimensions require {}.",
+				name, tiles.size(), expectedCount);
+			return std::nullopt;
+		}
+
+		return TileLayer(name, width, height, mapTileWidth, std::move(tiles));
 	}
 }
-
-
