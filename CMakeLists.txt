@@ -70,6 +70,8 @@ add_library(modwin_engine STATIC
     src/editor/EditorUI.cpp
     src/editor/EditorCamera.cpp
     src/editor/EditorTool.cpp
+        src/graphics/MapDocument.cpp
+        include/graphics/MapDocument.h
 )
 
 add_library(modwin::engine ALIAS modwin_engine)

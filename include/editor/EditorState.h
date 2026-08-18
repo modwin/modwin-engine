@@ -1,7 +1,6 @@
 #ifndef MODWIN_ENGINE_EDITORSTATE_H
 #define MODWIN_ENGINE_EDITORSTATE_H
 #include <cstddef>
-
 #include "graphics/TileLayer.h"
 
 namespace Modwin

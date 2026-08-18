@@ -1,9 +1,7 @@
 #include "graphics/TextureManager.h"
-
 #include "Log.h"
 #include "core/Engine.h"
 #include "core/ResourcePaths.h"
-
 #include <SDL3_image/SDL_image.h>
 
 namespace Modwin
@@ -62,6 +60,10 @@ namespace Modwin
 			SDL_DestroyTexture(texture);
 		}
 		m_Textures.clear();
+	}
+
+	bool TextureManager::LoadFromFile(const std::string& texture_id, const std::filesystem::path& path)
+	{
 	}
 
 	SDL_Texture* TextureManager::FindTexture(const std::string& id) const
