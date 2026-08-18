@@ -1,4 +1,5 @@
 #pragma once
+#include "editor/EditorState.h"
 
 struct SDL_Renderer;
 struct SDL_Window;
@@ -9,37 +10,46 @@ namespace Modwin
 
 	class Engine
 	{
-	public:
-		Engine(const Engine&) = delete;
-		Engine& operator=(const Engine&) = delete;
+		public:
+			Engine(const Engine&) = delete;
 
-		static Engine* GetInstance()
-		{
-			static Engine instance;
-			return &instance;
-		}
+			Engine& operator=(const Engine&) = delete;
 
-		bool Init();
-		void Run();
-		void Quit();
+			static Engine* GetInstance()
+			{
+				static Engine instance;
+				return &instance;
+			}
 
-		[[nodiscard]] bool IsRunning() const noexcept;
-		[[nodiscard]] SDL_Renderer* GetRenderer() const noexcept;
+			bool Init();
 
-		~Engine() = default;
+			void Run();
 
-	private:
-		Engine() = default;
+			void Quit();
 
-		bool InitImGui();
-		bool ProcessEvents();
-		void LoadResources();
-		void Update();
-		void Render();
+			[[nodiscard]] bool IsRunning() const noexcept;
 
-		SDL_Renderer* m_Renderer = nullptr;
-		SDL_Window* m_Window = nullptr;
-		TileMap* m_CurrentLevel = nullptr;
-		bool m_IsRunning = false;
+			[[nodiscard]] SDL_Renderer* GetRenderer() const noexcept;
+
+			~Engine() = default;
+
+		private:
+			Engine() = default;
+
+			bool InitImGui();
+
+			bool ProcessEvents();
+
+			void LoadResources();
+
+			void Update();
+
+			void Render();
+
+			EditorMode m_EditorMode;
+			SDL_Renderer* m_Renderer = nullptr;
+			SDL_Window* m_Window = nullptr;
+			TileMap* m_CurrentLevel = nullptr;
+			bool m_IsRunning = false;
 	};
 }

@@ -72,6 +72,10 @@ add_library(modwin_engine STATIC
     src/editor/EditorTool.cpp
         src/graphics/MapDocument.cpp
         include/graphics/MapDocument.h
+        src/graphics/TileCoordinate.cpp
+        include/graphics/TileCoordinate.h
+        src/graphics/MapSerializer.cpp
+        include/graphics/MapSerializer.h
 )
 
 add_library(modwin::engine ALIAS modwin_engine)

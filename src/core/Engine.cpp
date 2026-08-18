@@ -62,8 +62,10 @@ namespace Modwin
 			return false;
 		}
 
+
 		LoadResources();
 		m_IsRunning = true;
+		m_EditorMode = EditorMode::Play;
 		Log::GetCoreLogger()->info("Modwin Engine initialized successfully.");
 		return true;
 	}
@@ -128,8 +130,14 @@ namespace Modwin
 		{
 			m_CurrentLevel->Update();
 		}
-
-		EntityManager::GetInstance()->Update(deltaTime);
+		if (m_EditorMode == EditorMode::Play)
+		{
+			EntityManager::GetInstance()->Update(deltaTime);
+		}
+		else
+		{
+			std::cout << "Editor::Update()" << std::endl;
+		}
 	}
 
 	void Engine::Render()
