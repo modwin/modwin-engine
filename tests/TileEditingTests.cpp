@@ -1,4 +1,6 @@
 #include "Log.h"
+#include "core/ResourcePaths.h"
+#include "editor/EditorCamera.h"
 #include "graphics/MapParser.h"
 #include "graphics/MapSerializer.h"
 #include "graphics/TileCoordinate.h"
@@ -91,8 +93,28 @@ int main(const int argc, char** argv)
 		!Modwin::ScreenToTile(99.0F, 50.0F, viewport, 0.0F, 0.0F, 1.0F, 32, 32, 60, 34)
 			.has_value(),
 		"Coordinates outside the viewport should be rejected.");
+	const auto transformedCoordinate = Modwin::ScreenToTile(
+		165.0F, 115.0F, viewport, 64.0F, 64.0F, 2.0F, 32, 32, 60, 34);
+	passed &= Check(
+		transformedCoordinate == Modwin::TileCoordinate{3, 3},
+		"Mouse conversion should account for camera position and zoom.");
+
+	Modwin::EditorCamera camera{9999.0F, 9999.0F, 8.0F};
+	Modwin::ClampEditorCamera(camera, viewport, 1920.0F, 1088.0F);
+	passed &= Check(camera.zoom == 4.0F, "Camera zoom should be clamped to its supported maximum.");
+	passed &= Check(
+		camera.x == 1760.0F && camera.y == 968.0F,
+		"Camera position should remain within the visible map bounds.");
 
 	const std::filesystem::path sourceMap = argv[1];
+	const Modwin::ProjectContext context = Modwin::CreateProjectContext(sourceMap);
+	passed &= Check(
+		context.activeMapPath == std::filesystem::absolute(sourceMap).lexically_normal(),
+		"An explicit project context should retain the selected map path.");
+	passed &= Check(
+		context.assetRoot == context.activeMapPath.parent_path().parent_path(),
+		"The asset root should be inferred from the selected map directory.");
+
 	auto original = Modwin::MapParser::LoadFromFile(sourceMap);
 	passed &= Check(original.has_value(), "The source TMX map should parse.");
 	if (!original.has_value())
