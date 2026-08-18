@@ -4,30 +4,34 @@
 
 #include "graphics/TileLayer.h"
 
-enum class EditorMode
+namespace Modwin
 {
-	Edit, Play
-};
+	enum class EditorMode
+	{
+		Edit,
+		Play
+	};
 
-enum class EditorTool
-{
-	Paint, Erase
-};
+	enum class EditorTool
+	{
+		Paint,
+		Erase
+	};
 
-class EditorState
-{
-	public:
-		EditorState();
-		virtual ~EditorState();
+	struct EditorState
+	{
+		EditorMode mode = EditorMode::Edit;
+		EditorTool activeTool = EditorTool::Paint;
 
-		std::size_t activeLayer = 0;
-		Modwin::TileGid selectedTile = 0;
+		std::size_t activeLayerIndex = 0;
+		TileGid selectedTile = 0;
 
 		int hoveredColumn = -1;
 		int hoveredRow = -1;
 
 		bool documentDirty = false;
-};
+	};
+}
 
 
 #endif //MODWIN_ENGINE_EDITORSTATE_H
