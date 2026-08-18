@@ -7,6 +7,7 @@ namespace Modwin
 	struct ProjectContext
 	{
 		std::filesystem::path projectRoot;
+		std::filesystem::path assetRoot;
 		std::filesystem::path activeMapPath;
 	};
 
