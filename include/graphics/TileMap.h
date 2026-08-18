@@ -11,6 +11,15 @@ namespace Modwin
 	class TileMap
 	{
 	public:
+		TileMap() = default;
+		TileMap(int width, int height, int tileWidth, int tileHeight) noexcept
+			: m_Width(width),
+			  m_Height(height),
+			  m_TileWidth(tileWidth),
+			  m_TileHeight(tileHeight)
+		{
+		}
+
 		void Render() const
 		{
 			for (const auto& layer : m_Layers)
@@ -52,7 +61,16 @@ namespace Modwin
 			return m_Layers;
 		}
 
+		[[nodiscard]] int GetWidth() const noexcept { return m_Width; }
+		[[nodiscard]] int GetHeight() const noexcept { return m_Height; }
+		[[nodiscard]] int GetTileWidth() const noexcept { return m_TileWidth; }
+		[[nodiscard]] int GetTileHeight() const noexcept { return m_TileHeight; }
+
 	private:
+		int m_Width = 0;
+		int m_Height = 0;
+		int m_TileWidth = 0;
+		int m_TileHeight = 0;
 		TilesetVec m_Tilesets;
 		std::vector<TileLayer> m_Layers;
 	};

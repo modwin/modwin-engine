@@ -14,29 +14,49 @@ namespace Modwin
 
 	bool TextureManager::Load(const std::string& name, const std::string& directory)
 	{
-		if (m_Textures.find(name) != m_Textures.end())
+		const auto imagePath = GetResourcePath(directory) / (name + ".png");
+		return LoadFromFile(name, imagePath);
+	}
+
+	bool TextureManager::LoadFromFile(
+		const std::string& textureId, const std::filesystem::path& path)
+	{
+		if (textureId.empty() || path.empty())
+		{
+			Log::GetCoreLogger()->error("A texture ID and file path are required.");
+			return false;
+		}
+
+		if (m_Textures.find(textureId) != m_Textures.end())
 		{
 			return true;
 		}
 
-		const auto imagePath = GetResourcePath(directory) / (name + ".png");
-		SDL_Surface* surface = IMG_Load(imagePath.string().c_str());
+		SDL_Surface* surface = IMG_Load(path.string().c_str());
 		if (surface == nullptr)
 		{
-			Log::GetCoreLogger()->error("Failed to load texture '{}': {}", imagePath.string(), SDL_GetError());
+			Log::GetCoreLogger()->error("Failed to load texture '{}': {}", path.string(), SDL_GetError());
 			return false;
 		}
 
-		SDL_Texture* texture = SDL_CreateTextureFromSurface(Engine::GetInstance()->GetRenderer(), surface);
+		SDL_Renderer* renderer = Engine::GetInstance()->GetRenderer();
+		if (renderer == nullptr)
+		{
+			SDL_DestroySurface(surface);
+			Log::GetCoreLogger()->error("Cannot create texture '{}' without an SDL renderer.", textureId);
+			return false;
+		}
+
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 		SDL_DestroySurface(surface);
 
 		if (texture == nullptr)
 		{
-			Log::GetCoreLogger()->error("Failed to create texture '{}': {}", name, SDL_GetError());
+			Log::GetCoreLogger()->error("Failed to create texture '{}': {}", textureId, SDL_GetError());
 			return false;
 		}
 
-		m_Textures.emplace(name, texture);
+		m_Textures.emplace(textureId, texture);
 		return true;
 	}
 
@@ -62,30 +82,22 @@ namespace Modwin
 		m_Textures.clear();
 	}
 
-	bool TextureManager::LoadFromFile(const std::string& texture_id, const std::filesystem::path& path)
-	{
-		return false;
-	}
-
 	SDL_Texture* TextureManager::GetTexture(const std::string& id) const noexcept
 	{
-		for (const auto& [fst, snd] : m_Textures)
-		{
-			if (fst == id) return snd;
-		}
-		return nullptr;
+		const auto texture = m_Textures.find(id);
+		return texture != m_Textures.end() ? texture->second : nullptr;
 	}
 
 	SDL_Texture* TextureManager::FindTexture(const std::string& id) const
 	{
-		const auto texture = m_Textures.find(id);
-		if (texture == m_Textures.end())
+		SDL_Texture* texture = GetTexture(id);
+		if (texture == nullptr)
 		{
 			SDL_Log("Texture ID '%s' was not found.", id.c_str());
 			return nullptr;
 		}
 
-		return texture->second;
+		return texture;
 	}
 
 	void TextureManager::Draw(const std::string& textureId, float x, float y, float width, float height,

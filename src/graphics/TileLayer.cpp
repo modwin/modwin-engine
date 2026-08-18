@@ -112,7 +112,13 @@ namespace Modwin
 			return false;
 		}
 
-		m_Tiles[GetIndex(column, row)] = tileGid;
+		TileGid& currentTile = m_Tiles[GetIndex(column, row)];
+		if (currentTile == tileGid)
+		{
+			return false;
+		}
+
+		currentTile = tileGid;
 		return true;
 	}
 
