@@ -1,13 +1,17 @@
 #pragma once
 #include "editor/EditorState.h"
+#include "editor/EditorController.h"
+#include "editor/EditorUI.h"
+#include "graphics/MapDocument.h"
+#include "core/ResourcePaths.h"
+
+#include <optional>
 
 struct SDL_Renderer;
 struct SDL_Window;
 
 namespace Modwin
 {
-	class TileMap;
-
 	class Engine
 	{
 		public:
@@ -40,16 +44,19 @@ namespace Modwin
 
 			bool ProcessEvents();
 
-			void LoadResources();
+			bool LoadResources();
 
 			void Update();
 
 			void Render();
 
-			EditorMode m_EditorMode;
+			ProjectContext m_ProjectContext;
+			std::optional<MapDocument> m_ActiveDocument;
+			EditorState m_EditorState;
+			EditorUI m_EditorUI;
+			EditorController m_EditorController;
 			SDL_Renderer* m_Renderer = nullptr;
 			SDL_Window* m_Window = nullptr;
-			TileMap* m_CurrentLevel = nullptr;
 			bool m_IsRunning = false;
 	};
 }

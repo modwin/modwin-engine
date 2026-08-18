@@ -3,8 +3,8 @@
 #include "entity/Entity.h"
 #include "entity/EntityManager.h"
 #include "graphics/MapParser.h"
+#include "graphics/MapDocument.h"
 #include "graphics/TextureManager.h"
-#include "graphics/TileMap.h"
 #include "input/InputHandler.h"
 #include "time/Time.h"
 #include <SDL3/SDL.h>
@@ -63,9 +63,14 @@ namespace Modwin
 		}
 
 
-		LoadResources();
+		if (!LoadResources())
+		{
+			Log::GetCoreLogger()->error("Failed to load the initial project resources.");
+			Quit();
+			return false;
+		}
+
 		m_IsRunning = true;
-		m_EditorMode = EditorMode::Play;
 		Log::GetCoreLogger()->info("Modwin Engine initialized successfully.");
 		return true;
 	}
@@ -123,29 +128,45 @@ namespace Modwin
 		ImGui_ImplSDLRenderer3_NewFrame();
 		ImGui_ImplSDL3_NewFrame();
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
+
+		if (m_ActiveDocument.has_value())
+		{
+			m_EditorUI.Draw(
+				m_EditorState, *m_ActiveDocument, *TextureManager::GetInstance());
+		}
 
 		const float deltaTime = Time::GetInstance()->GetDeltaTime();
-		if (m_CurrentLevel != nullptr)
+		if (m_ActiveDocument.has_value())
 		{
-			m_CurrentLevel->Update();
+			m_ActiveDocument->map.Update();
 		}
-		if (m_EditorMode == EditorMode::Play)
+
+		if (m_EditorState.mode == EditorMode::Play && !ImGui::GetIO().WantCaptureKeyboard)
 		{
 			EntityManager::GetInstance()->Update(deltaTime);
 		}
-		else
+		else if (m_EditorState.mode == EditorMode::Edit && m_ActiveDocument.has_value())
 		{
-			std::cout << "Editor::Update()" << std::endl;
+			int windowWidth = 0;
+			int windowHeight = 0;
+			if (SDL_GetWindowSize(m_Window, &windowWidth, &windowHeight))
+			{
+				const MapViewport viewport{
+					0.0F,
+					0.0F,
+					static_cast<float>(windowWidth),
+					static_cast<float>(windowHeight)};
+				m_EditorController.Update(m_EditorState, *m_ActiveDocument, viewport);
+			}
 		}
 	}
 
 	void Engine::Render()
 	{
 		SDL_RenderClear(m_Renderer);
-		if (m_CurrentLevel != nullptr)
+		if (m_ActiveDocument.has_value())
 		{
-			m_CurrentLevel->Render();
+			m_ActiveDocument->map.Render();
 		}
 
 		EntityManager::GetInstance()->Draw();
@@ -162,7 +183,7 @@ namespace Modwin
 		EntityManager::GetInstance()->Clean();
 		MapParser::GetInstance()->Clean();
 		TextureManager::GetInstance()->Clean();
-		m_CurrentLevel = nullptr;
+		m_ActiveDocument.reset();
 
 		if (ImGui::GetCurrentContext() != nullptr)
 		{
@@ -184,19 +205,36 @@ namespace Modwin
 		}
 	}
 
-	void Engine::LoadResources()
+	bool Engine::LoadResources()
 	{
 		Properties playerProperties(SDL_FLIP_NONE, 35, 45, 64, 64, "player", "sprites");
-		TextureManager::GetInstance()->Load("player", playerProperties.m_Source);
+		if (!TextureManager::GetInstance()->Load("player", playerProperties.m_Source))
+		{
+			return false;
+		}
 		EntityManager::GetInstance()->AddEntity("player", playerProperties);
 
-		constexpr auto mapId = "main";
-		if (!MapParser::GetInstance()->LoadMap(mapId, "map"))
+		m_ProjectContext.projectRoot = GetResourcePath({});
+		m_ProjectContext.assetRoot = m_ProjectContext.projectRoot;
+		m_ProjectContext.activeMapPath = m_ProjectContext.assetRoot / "maps" / "map.tmx";
+
+		auto tileMap = MapParser::LoadFromFile(m_ProjectContext.activeMapPath);
+		if (!tileMap.has_value())
 		{
-			Log::GetCoreLogger()->error("Failed to load the map.");
-			return;
+			return false;
 		}
 
-		m_CurrentLevel = MapParser::GetInstance()->GetTileMap(mapId);
+		for (const auto& tileset : tileMap->GetTilesets())
+		{
+			const auto texturePath =
+				(m_ProjectContext.activeMapPath.parent_path() / tileset.source).lexically_normal();
+			if (!TextureManager::GetInstance()->LoadFromFile(tileset.name, texturePath))
+			{
+				return false;
+			}
+		}
+
+		m_ActiveDocument.emplace(m_ProjectContext.activeMapPath, std::move(*tileMap));
+		return true;
 	}
 }
