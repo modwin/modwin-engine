@@ -64,6 +64,16 @@ namespace Modwin
 
 	bool TextureManager::LoadFromFile(const std::string& texture_id, const std::filesystem::path& path)
 	{
+		return false;
+	}
+
+	SDL_Texture* TextureManager::GetTexture(const std::string& id) const noexcept
+	{
+		for (const auto& [fst, snd] : m_Textures)
+		{
+			if (fst == id) return snd;
+		}
+		return nullptr;
 	}
 
 	SDL_Texture* TextureManager::FindTexture(const std::string& id) const
