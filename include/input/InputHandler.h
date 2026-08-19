@@ -11,14 +11,16 @@ namespace Modwin
 
 		static InputHandler* GetInstance();
 
-		bool ProcessEvents();
-		bool IsKeyDown(SDL_Scancode sdlKey) const;
+		void ProcessEvents();
+		[[nodiscard]] bool ConsumeQuitRequest() noexcept;
+		[[nodiscard]] bool IsKeyDown(SDL_Scancode sdlKey) const;
 
 	private:
 		InputHandler(): m_KeyStates(SDL_GetKeyboardState(nullptr)){}
 		~InputHandler() = default;
 
 		const bool* m_KeyStates;
+		bool m_QuitRequested = false;
 		static InputHandler* s_INSTANCE;
 
 

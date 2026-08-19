@@ -14,7 +14,7 @@ namespace Modwin
 		return s_INSTANCE;
 	}
 
-	bool InputHandler::ProcessEvents()
+	void InputHandler::ProcessEvents()
 	{
 		SDL_Event event;
 		while(SDL_PollEvent(&event))
@@ -22,10 +22,16 @@ namespace Modwin
 			ImGui_ImplSDL3_ProcessEvent(&event);
 			if (event.type == SDL_EVENT_QUIT)
 			{
-				return false;
+				m_QuitRequested = true;
 			}
 		}
-		return true;
+	}
+
+	bool InputHandler::ConsumeQuitRequest() noexcept
+	{
+		const bool requested = m_QuitRequested;
+		m_QuitRequested = false;
+		return requested;
 	}
 
 	bool InputHandler::IsKeyDown(SDL_Scancode key) const
