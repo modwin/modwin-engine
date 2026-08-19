@@ -20,11 +20,11 @@ namespace Modwin
 		{
 		}
 
-		void Render() const
+		void Render(const float cameraX = 0.0F, const float cameraY = 0.0F) const
 		{
 			for (const auto& layer : m_Layers)
 			{
-				layer.Render(m_Tilesets);
+				layer.Render(m_Tilesets, cameraX, cameraY);
 			}
 		}
 

@@ -33,7 +33,8 @@ namespace Modwin
 		}
 	}
 
-	void TileLayer::Render(const TilesetVec& tilesets) const
+	void TileLayer::Render(
+		const TilesetVec& tilesets, const float cameraX, const float cameraY) const
 	{
 		for (int row = 0; row < m_Height; ++row)
 		{
@@ -77,8 +78,8 @@ namespace Modwin
 				TextureManager::GetInstance()->DrawTile(
 					tileset->name,
 					m_TileWidth,
-					column * m_TileWidth,
-					row * m_TileWidth,
+					static_cast<float>(column * m_TileWidth) - cameraX,
+					static_cast<float>(row * m_TileWidth) - cameraY,
 					sourceRow,
 					sourceColumn,
 					static_cast<SDL_FlipMode>(flipFlags));

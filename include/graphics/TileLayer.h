@@ -48,7 +48,7 @@ namespace Modwin
 		[[nodiscard]] const std::vector<TileGid>& GetTiles() const noexcept;
 
 		void Update();
-		void Render(const TilesetVec& tilesets) const;
+		void Render(const TilesetVec& tilesets, float cameraX = 0.0F, float cameraY = 0.0F) const;
 
 	private:
 		[[nodiscard]] std::size_t GetIndex(int column, int row) const noexcept;
