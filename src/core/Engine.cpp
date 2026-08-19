@@ -12,6 +12,8 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
+#include <utility>
+
 namespace Modwin
 {
 	SDL_Renderer* Engine::GetRenderer() const noexcept
@@ -24,9 +26,12 @@ namespace Modwin
 		return m_IsRunning;
 	}
 
-	bool Engine::Init()
+	bool Engine::Init(ProjectContext projectContext)
 	{
 		Log::Init();
+		m_ProjectContext = projectContext.activeMapPath.empty()
+			? CreateDefaultProjectContext()
+			: std::move(projectContext);
 
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
@@ -120,7 +125,20 @@ namespace Modwin
 
 	bool Engine::ProcessEvents()
 	{
-		return InputHandler::GetInstance()->ProcessEvents();
+		auto* input = InputHandler::GetInstance();
+		input->ProcessEvents();
+		if (!input->ConsumeQuitRequest())
+		{
+			return true;
+		}
+
+		if (m_ActiveDocument.has_value() && m_ActiveDocument->IsDirty())
+		{
+			m_CloseConfirmationRequested = true;
+			return true;
+		}
+
+		return false;
 	}
 
 	void Engine::Update()
@@ -131,8 +149,28 @@ namespace Modwin
 
 		if (m_ActiveDocument.has_value())
 		{
-			m_EditorUI.Draw(
+			m_MapViewport = m_EditorUI.Draw(
 				m_EditorState, *m_ActiveDocument, *TextureManager::GetInstance());
+			ClampEditorCamera(
+				m_EditorState.camera,
+				m_MapViewport,
+				static_cast<float>(m_ActiveDocument->map.GetWidth() *
+					m_ActiveDocument->map.GetTileWidth()),
+				static_cast<float>(m_ActiveDocument->map.GetHeight() *
+					m_ActiveDocument->map.GetTileHeight()));
+
+			const CloseDecision closeDecision = m_EditorUI.DrawCloseConfirmation(
+				*m_ActiveDocument, m_CloseConfirmationRequested);
+			if (closeDecision == CloseDecision::SaveAndClose ||
+				closeDecision == CloseDecision::DiscardAndClose)
+			{
+				m_IsRunning = false;
+				m_CloseConfirmationRequested = false;
+			}
+			else if (closeDecision == CloseDecision::Cancel)
+			{
+				m_CloseConfirmationRequested = false;
+			}
 		}
 
 		const float deltaTime = Time::GetInstance()->GetDeltaTime();
@@ -147,29 +185,51 @@ namespace Modwin
 		}
 		else if (m_EditorState.mode == EditorMode::Edit && m_ActiveDocument.has_value())
 		{
-			int windowWidth = 0;
-			int windowHeight = 0;
-			if (SDL_GetWindowSize(m_Window, &windowWidth, &windowHeight))
-			{
-				const MapViewport viewport{
-					0.0F,
-					0.0F,
-					static_cast<float>(windowWidth),
-					static_cast<float>(windowHeight)};
-				m_EditorController.Update(m_EditorState, *m_ActiveDocument, viewport);
-			}
+			m_EditorController.Update(m_EditorState, *m_ActiveDocument, m_MapViewport);
 		}
 	}
 
 	void Engine::Render()
 	{
+		SDL_SetRenderDrawColor(m_Renderer, 24, 26, 32, 255);
 		SDL_RenderClear(m_Renderer);
-		if (m_ActiveDocument.has_value())
+		if (m_ActiveDocument.has_value() &&
+			m_MapViewport.width > 0.0F && m_MapViewport.height > 0.0F)
 		{
-			m_ActiveDocument->map.Render();
-		}
+			const SDL_Rect viewportRect{
+				static_cast<int>(m_MapViewport.x),
+				static_cast<int>(m_MapViewport.y),
+				static_cast<int>(m_MapViewport.width),
+				static_cast<int>(m_MapViewport.height)};
+			SDL_SetRenderViewport(m_Renderer, &viewportRect);
 
-		EntityManager::GetInstance()->Draw();
+			const bool editing = m_EditorState.mode == EditorMode::Edit;
+			const float zoom = editing ? m_EditorState.camera.zoom : 1.0F;
+			const float cameraX = editing ? m_EditorState.camera.x : 0.0F;
+			const float cameraY = editing ? m_EditorState.camera.y : 0.0F;
+			SDL_SetRenderScale(m_Renderer, zoom, zoom);
+			m_ActiveDocument->map.Render(cameraX, cameraY);
+
+			if (editing && m_EditorState.hoveredColumn >= 0 && m_EditorState.hoveredRow >= 0)
+			{
+				const float tileWidth = static_cast<float>(m_ActiveDocument->map.GetTileWidth());
+				const float tileHeight = static_cast<float>(m_ActiveDocument->map.GetTileHeight());
+				const SDL_FRect highlight{
+					static_cast<float>(m_EditorState.hoveredColumn) * tileWidth - cameraX,
+					static_cast<float>(m_EditorState.hoveredRow) * tileHeight - cameraY,
+					tileWidth,
+					tileHeight};
+				SDL_SetRenderDrawColor(m_Renderer, 255, 214, 64, 255);
+				SDL_RenderRect(m_Renderer, &highlight);
+			}
+			else if (!editing)
+			{
+				EntityManager::GetInstance()->Draw();
+			}
+
+			SDL_SetRenderScale(m_Renderer, 1.0F, 1.0F);
+			SDL_SetRenderViewport(m_Renderer, nullptr);
+		}
 
 		ImGui::Render();
 		ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), m_Renderer);
@@ -213,10 +273,6 @@ namespace Modwin
 			return false;
 		}
 		EntityManager::GetInstance()->AddEntity("player", playerProperties);
-
-		m_ProjectContext.projectRoot = GetResourcePath({});
-		m_ProjectContext.assetRoot = m_ProjectContext.projectRoot;
-		m_ProjectContext.activeMapPath = m_ProjectContext.assetRoot / "maps" / "map.tmx";
 
 		auto tileMap = MapParser::LoadFromFile(m_ProjectContext.activeMapPath);
 		if (!tileMap.has_value())

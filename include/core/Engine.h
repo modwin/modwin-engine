@@ -25,7 +25,7 @@ namespace Modwin
 				return &instance;
 			}
 
-			bool Init();
+			bool Init(ProjectContext projectContext = {});
 
 			void Run();
 
@@ -55,6 +55,8 @@ namespace Modwin
 			EditorState m_EditorState;
 			EditorUI m_EditorUI;
 			EditorController m_EditorController;
+			MapViewport m_MapViewport;
+			bool m_CloseConfirmationRequested = false;
 			SDL_Renderer* m_Renderer = nullptr;
 			SDL_Window* m_Window = nullptr;
 			bool m_IsRunning = false;
