@@ -28,7 +28,7 @@ namespace Modwin
 			void DrawFrame(const std::string& textureId, float x, float y, float width, float height,
 				int spriteRow, int frame, SDL_FlipMode flipMode);
 
-			void DrawTile(const std::string& textureId, int tileWidth, int x, int y, int row, int frame,
+			void DrawTile(const std::string& textureId, int tileWidth, float x, float y, int row, int frame,
 				SDL_FlipMode flipMode = SDL_FLIP_NONE);
 
 			~TextureManager() = default;

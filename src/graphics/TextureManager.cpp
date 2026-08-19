@@ -128,7 +128,7 @@ namespace Modwin
 		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
 	}
 
-	void TextureManager::DrawTile(const std::string& textureId, int tileWidth, int x, int y, int row, int frame,
+	void TextureManager::DrawTile(const std::string& textureId, int tileWidth, float x, float y, int row, int frame,
 		SDL_FlipMode flipMode)
 	{
 		SDL_Texture* texture = FindTexture(textureId);
@@ -139,7 +139,7 @@ namespace Modwin
 
 		const auto size = static_cast<float>(tileWidth);
 		const SDL_FRect source = {size * frame, size * row, size, size};
-		const SDL_FRect destination = {static_cast<float>(x), static_cast<float>(y), size, size};
+		const SDL_FRect destination = {x, y, size, size};
 		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
 	}
 }
