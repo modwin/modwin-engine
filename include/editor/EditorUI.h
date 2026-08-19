@@ -3,14 +3,29 @@
 #include "EditorState.h"
 #include "graphics/MapDocument.h"
 #include "graphics/TextureManager.h"
+#include "graphics/TileCoordinate.h"
 
 
 namespace Modwin
 {
+	enum class CloseDecision
+	{
+		None,
+		SaveAndClose,
+		DiscardAndClose,
+		Cancel
+	};
+
 	class EditorUI
 	{
 	public:
-		void Draw(EditorState& state, MapDocument& document, TextureManager& textures) const;
+		[[nodiscard]] MapViewport Draw(
+			EditorState& state,
+			MapDocument& document,
+			TextureManager& textures) const;
+
+		[[nodiscard]] CloseDecision DrawCloseConfirmation(
+			MapDocument& document, bool openPopup) const;
 	};
 }
 

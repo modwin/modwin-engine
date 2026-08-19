@@ -12,4 +12,6 @@ namespace Modwin
 	};
 
 	[[nodiscard]] std::filesystem::path GetResourcePath(const std::filesystem::path& relativePath);
+	[[nodiscard]] ProjectContext CreateDefaultProjectContext();
+	[[nodiscard]] ProjectContext CreateProjectContext(std::filesystem::path activeMapPath);
 }

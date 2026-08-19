@@ -28,7 +28,6 @@ namespace Modwin
 		float mouseY = 0.0F;
 		const SDL_MouseButtonFlags mouseButtons = SDL_GetMouseState(&mouseX, &mouseY);
 		TileLayer& activeLayer = layers[state.activeLayerIndex];
-
 		const auto coordinate = ScreenToTile(
 			mouseX,
 			mouseY,

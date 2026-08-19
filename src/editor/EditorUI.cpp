@@ -8,10 +8,26 @@
 
 namespace Modwin
 {
-	void EditorUI::Draw(
+	MapViewport EditorUI::Draw(
 		EditorState& state, MapDocument& document, TextureManager& textures) const
 	{
-		ImGui::Begin("Modwin Editor");
+		constexpr float sidebarWidth = 360.0F;
+		const ImVec2 displaySize = ImGui::GetIO().DisplaySize;
+		const float actualSidebarWidth = std::min(sidebarWidth, displaySize.x);
+		const MapViewport viewport{
+			actualSidebarWidth,
+			0.0F,
+			std::max(0.0F, displaySize.x - actualSidebarWidth),
+			std::max(0.0F, displaySize.y)};
+
+		ImGui::SetNextWindowPos(ImVec2(0.0F, 0.0F));
+		ImGui::SetNextWindowSize(ImVec2(actualSidebarWidth, displaySize.y));
+		constexpr ImGuiWindowFlags sidebarFlags =
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoResize |
+			ImGuiWindowFlags_NoCollapse |
+			ImGuiWindowFlags_NoSavedSettings;
+		ImGui::Begin("Modwin Editor", nullptr, sidebarFlags);
 
 		if (ImGui::RadioButton("Edit", state.mode == EditorMode::Edit))
 		{
@@ -24,6 +40,7 @@ namespace Modwin
 		}
 		ImGui::SameLine();
 		ImGui::TextUnformatted(document.IsDirty() ? "Unsaved changes" : "Saved");
+		ImGui::TextWrapped("Map: %s", document.sourcePath.string().c_str());
 		if (ImGui::Button("Save") &&
 			MapSerializer::Save(document.map, document.sourcePath))
 		{
@@ -34,7 +51,7 @@ namespace Modwin
 		{
 			ImGui::TextUnformatted("Gameplay input is active.");
 			ImGui::End();
-			return;
+			return viewport;
 		}
 
 		ImGui::SeparatorText("Tool");
@@ -54,6 +71,14 @@ namespace Modwin
 		else
 		{
 			ImGui::TextDisabled("Hovered tile: outside map");
+		}
+
+		ImGui::SeparatorText("Camera");
+		ImGui::DragFloat2("Position", &state.camera.x, 4.0F, 0.0F, 100000.0F, "%.0f");
+		ImGui::SliderFloat("Zoom", &state.camera.zoom, 0.25F, 4.0F, "%.2fx");
+		if (ImGui::Button("Reset camera"))
+		{
+			state.camera = {};
 		}
 
 		auto& layers = document.map.GetLayers();
@@ -81,7 +106,7 @@ namespace Modwin
 		{
 			ImGui::TextDisabled("This map has no tilesets.");
 			ImGui::End();
-			return;
+			return viewport;
 		}
 
 		state.activeTilesetIndex = std::min(state.activeTilesetIndex, tilesets.size() - 1U);
@@ -109,7 +134,7 @@ namespace Modwin
 		{
 			ImGui::TextDisabled("The selected tileset texture is unavailable.");
 			ImGui::End();
-			return;
+			return viewport;
 		}
 
 		constexpr float paletteTileSize = 40.0F;
@@ -157,5 +182,48 @@ namespace Modwin
 
 		ImGui::Text("Selected GID: %u", static_cast<unsigned int>(state.selectedTile));
 		ImGui::End();
+		return viewport;
+	}
+
+	CloseDecision EditorUI::DrawCloseConfirmation(
+		MapDocument& document, const bool openPopup) const
+	{
+		if (openPopup)
+		{
+			ImGui::OpenPopup("Unsaved changes");
+		}
+
+		CloseDecision decision = CloseDecision::None;
+		if (ImGui::BeginPopupModal(
+			"Unsaved changes", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::TextUnformatted("The active map contains unsaved changes.");
+			ImGui::TextUnformatted("Save before closing Modwin Engine?");
+			ImGui::Separator();
+
+			if (ImGui::Button("Save and close") &&
+				MapSerializer::Save(document.map, document.sourcePath))
+			{
+				document.MarkSaved();
+				decision = CloseDecision::SaveAndClose;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Discard changes"))
+			{
+				decision = CloseDecision::DiscardAndClose;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				decision = CloseDecision::Cancel;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
+
+		return decision;
 	}
 }
