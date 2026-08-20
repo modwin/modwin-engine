@@ -7,24 +7,25 @@
 
 namespace Modwin
 {
-
 	class Animation
 	{
-	public:
+		public:
+			Animation()
+			{
+			};
 
-		Animation(){};
+			void Update();
 
-		void Update();
-		void Draw(float x, float y, float spriteW, float spriteH) const;
-		void SetValues(std::string id, int spriteRow, int frameCount, int animationSpeed, SDL_FlipMode flipMode = SDL_FLIP_NONE);
+			void Draw(float x, float y, float spriteW, float spriteH) const;
 
-		int m_SpriteRow, m_SpriteFrame;
-		int	m_AnimationSpeed, m_FrameCount;
-		std::string m_TextureID;
-		SDL_FlipMode m_FlipMode;
+			void SetValues(std::string id, int spriteRow, int frameCount, int animationSpeed,
+				SDL_FlipMode flipMode = SDL_FLIP_NONE);
 
+			int m_SpriteRow, m_SpriteFrame;
+			int m_AnimationSpeed, m_FrameCount;
+			std::string m_TextureID;
+			SDL_FlipMode m_FlipMode;
 	};
-
 } // Modwin
 
 #endif //MODWIN_ENGINE_ANIMATION_H
