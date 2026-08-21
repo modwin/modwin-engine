@@ -1,0 +1,14 @@
+//
+// Created by komvu on 2026-08-21.
+//
+
+#ifndef MODWIN_ENGINE_KINEMATICCOMPONENT_H
+#define MODWIN_ENGINE_KINEMATICCOMPONENT_H
+
+
+class KinematicComponent
+{
+};
+
+
+#endif //MODWIN_ENGINE_KINEMATICCOMPONENT_H
