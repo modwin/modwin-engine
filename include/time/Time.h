@@ -17,9 +17,10 @@ namespace Modwin
 			[[nodiscard]] float GetLastTIme() const { return m_LastTime; }
 
 		private:
-			Time()
+			Time() : m_DeltaTime(0), m_LastTime(0)
 			{
-			};
+			}
+			;
 
 			~Time();
 
