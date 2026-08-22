@@ -8,20 +8,24 @@ namespace Modwin
 
 	class Time
 	{
-	public:
-		static Time* GetInstance();
+		public:
+			static Time* GetInstance();
 
-		void CalculateTickRate();
-		inline float GetDeltaTime() const{return m_DeltaTime;}
-		inline float GetLastTIme() const{return m_LastTime;}
+			void CalculateTickRate();
 
+			[[nodiscard]] float GetDeltaTime() const { return m_DeltaTime; }
+			[[nodiscard]] float GetLastTIme() const { return m_LastTime; }
 
-	private:
-		Time(){};
-		~Time();
-		float m_DeltaTime;
-		float m_LastTime;
-		static Time* s_INSTANCE;
+		private:
+			Time()
+			{
+			};
+
+			~Time();
+
+			float m_DeltaTime;
+			float m_LastTime;
+			static Time* s_INSTANCE;
 	};
 }
 

@@ -76,6 +76,8 @@ add_library(modwin_engine STATIC
     src/editor/EditorUI.cpp
     src/editor/EditorCamera.cpp
     src/editor/EditorController.cpp
+        src/component/KinematicComponent.cpp
+        include/component/KinematicComponent.h
 )
 
 add_library(modwin::engine ALIAS modwin_engine)
