@@ -3,8 +3,8 @@
 
 namespace Modwin
 {
-	const int FPS_LIMIT = 60;
-	const float DELTA_TIME_MAX = 1.5f;
+	constexpr int FPS_LIMIT = 60;
+	constexpr float DELTA_TIME_MAX = 1.5f;
 
 	class Time
 	{
