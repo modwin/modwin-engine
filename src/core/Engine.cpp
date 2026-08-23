@@ -12,6 +12,8 @@
 #include <imgui_impl_sdlrenderer3.h>
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 #include <utility>
 
 namespace Modwin
@@ -27,16 +29,16 @@ namespace Modwin
 	}
 
 	bool Engine::Init(
-		std::unique_ptr<GameLayer> gameLayer,
+		ModwinGameApi gameApi,
 		ProjectContext projectContext)
 	{
 		Log::Init();
-		if (gameLayer == nullptr)
+		if (!ValidateGameApi(gameApi))
 		{
-			Log::GetCoreLogger()->error("A game layer is required to initialize the engine.");
 			return false;
 		}
-		m_GameLayer = std::move(gameLayer);
+		m_GameApi = gameApi;
+		BuildEngineApi();
 		m_ProjectContext = projectContext.activeMapPath.empty()
 			? CreateDefaultProjectContext()
 			: std::move(projectContext);
@@ -84,12 +86,13 @@ namespace Modwin
 			return false;
 		}
 
-		if (!m_GameLayer->Initialize())
+		if (m_GameApi.initialize(m_GameApi.game_context, &m_EngineApi) != MODWIN_RESULT_OK)
 		{
-			Log::GetCoreLogger()->error("Failed to initialize the game layer.");
+			Log::GetCoreLogger()->error("The game module failed to initialize.");
 			Quit();
 			return false;
 		}
+		m_GameInitialized = true;
 
 		m_IsRunning = true;
 		Log::GetCoreLogger()->info("Modwin Engine initialized successfully.");
@@ -195,11 +198,20 @@ namespace Modwin
 		}
 
 		HandlePlayModeTransition();
+		if (!m_IsRunning)
+		{
+			return;
+		}
 		if (m_EditorState.mode == EditorMode::Play)
 		{
-			m_GameLayer->CaptureInput(
-				*InputHandler::GetInstance(),
-				!ImGui::GetIO().WantCaptureKeyboard);
+			if (!HandleGameResult(
+				m_GameApi.capture_input(
+					m_GameApi.game_context,
+					ImGui::GetIO().WantCaptureKeyboard ? 0U : 1U),
+				"capture input"))
+			{
+				return;
+			}
 
 			const float maximumAccumulatedTime =
 				FrameClock::FixedDeltaSeconds *
@@ -212,11 +224,24 @@ namespace Modwin
 			while (m_FixedStepAccumulator >= FrameClock::FixedDeltaSeconds &&
 				fixedSteps < FrameClock::MaximumFixedStepsPerFrame)
 			{
-				m_GameLayer->FixedUpdate(FrameClock::FixedDeltaSeconds);
+				if (!HandleGameResult(
+					m_GameApi.fixed_update(
+						m_GameApi.game_context, FrameClock::FixedDeltaSeconds),
+					"fixed update"))
+				{
+					return;
+				}
+				m_RuntimeWorld.FixedUpdate(FrameClock::FixedDeltaSeconds);
 				m_FixedStepAccumulator -= FrameClock::FixedDeltaSeconds;
 				++fixedSteps;
 			}
-			m_GameLayer->Update(frameDeltaSeconds);
+			if (!HandleGameResult(
+				m_GameApi.update(m_GameApi.game_context, frameDeltaSeconds),
+				"variable update"))
+			{
+				return;
+			}
+			m_RuntimeWorld.Update(frameDeltaSeconds);
 		}
 		else if (m_ActiveDocument.has_value())
 		{
@@ -259,7 +284,7 @@ namespace Modwin
 			}
 			else if (!editing)
 			{
-				m_GameLayer->Render();
+				m_RuntimeWorld.Render();
 			}
 
 			SDL_SetRenderScale(m_Renderer, 1.0F, 1.0F);
@@ -275,11 +300,20 @@ namespace Modwin
 	{
 		m_IsRunning = false;
 
-		if (m_GameLayer != nullptr)
+		if (m_GameInitialized)
 		{
-			m_GameLayer->Shutdown();
-			m_GameLayer.reset();
+			const ModwinResult result = m_GameApi.shutdown(m_GameApi.game_context);
+			if (result != MODWIN_RESULT_OK)
+			{
+				Log::GetCoreLogger()->error(
+					"The game module failed during shutdown (result {}).",
+					static_cast<int>(result));
+			}
+			m_GameInitialized = false;
 		}
+		m_RuntimeWorld.Clear();
+		m_GameApi = {};
+		m_EngineApi = {};
 		MapParser::GetInstance()->Clean();
 		TextureManager::GetInstance()->Clean();
 		TextureManager::GetInstance()->SetRenderer(nullptr);
@@ -327,6 +361,270 @@ namespace Modwin
 		return true;
 	}
 
+	bool Engine::ValidateGameApi(const ModwinGameApi& gameApi) const
+	{
+		if (gameApi.abi_version != MODWIN_GAME_ABI_VERSION ||
+			gameApi.struct_size < MODWIN_GAME_API_V1_SIZE)
+		{
+			Log::GetCoreLogger()->error(
+				"The game module uses an incompatible ABI (version {}, size {}).",
+				gameApi.abi_version,
+				gameApi.struct_size);
+			return false;
+		}
+
+		const bool hasRequiredCallbacks =
+			gameApi.initialize != nullptr &&
+			gameApi.shutdown != nullptr &&
+			gameApi.enter_play != nullptr &&
+			gameApi.exit_play != nullptr &&
+			gameApi.capture_input != nullptr &&
+			gameApi.fixed_update != nullptr &&
+			gameApi.update != nullptr;
+		if (!hasRequiredCallbacks)
+		{
+			Log::GetCoreLogger()->error("The game module is missing a required callback.");
+		}
+		return hasRequiredCallbacks;
+	}
+
+	void Engine::BuildEngineApi() noexcept
+	{
+		m_EngineApi = {};
+		m_EngineApi.abi_version = MODWIN_GAME_ABI_VERSION;
+		m_EngineApi.struct_size = static_cast<uint32_t>(sizeof(ModwinEngineApi));
+		m_EngineApi.engine_context = this;
+		m_EngineApi.log = &Engine::ApiLog;
+		m_EngineApi.input_key_down = &Engine::ApiInputKeyDown;
+		m_EngineApi.input_key_pressed = &Engine::ApiInputKeyPressed;
+		m_EngineApi.input_key_released = &Engine::ApiInputKeyReleased;
+		m_EngineApi.load_texture = &Engine::ApiLoadTexture;
+		m_EngineApi.create_entity = &Engine::ApiCreateEntity;
+		m_EngineApi.destroy_entity = &Engine::ApiDestroyEntity;
+		m_EngineApi.get_entity_position = &Engine::ApiGetEntityPosition;
+		m_EngineApi.submit_entity_commands = &Engine::ApiSubmitEntityCommands;
+	}
+
+	bool Engine::HandleGameResult(const ModwinResult result, const char* operation)
+	{
+		if (result == MODWIN_RESULT_OK)
+		{
+			return true;
+		}
+		Log::GetCoreLogger()->error(
+			"The game module failed to {} (result {}).",
+			operation,
+			static_cast<int>(result));
+		m_IsRunning = false;
+		return false;
+	}
+
+	void MODWIN_ABI_CALL Engine::ApiLog(
+		void* context, const uint32_t level, const char* message) noexcept
+	{
+		if (context == nullptr || message == nullptr)
+		{
+			return;
+		}
+		try
+		{
+			switch (level)
+			{
+			case MODWIN_LOG_TRACE:
+				Log::GetClientLogger()->trace("{}", message);
+				break;
+			case MODWIN_LOG_WARNING:
+				Log::GetClientLogger()->warn("{}", message);
+				break;
+			case MODWIN_LOG_ERROR:
+				Log::GetClientLogger()->error("{}", message);
+				break;
+			case MODWIN_LOG_INFO:
+			default:
+				Log::GetClientLogger()->info("{}", message);
+				break;
+			}
+		}
+		catch (...)
+		{
+			// Exceptions must never cross the C ABI boundary.
+		}
+	}
+
+	uint8_t MODWIN_ABI_CALL Engine::ApiInputKeyDown(
+		void* context, const uint32_t keyCode) noexcept
+	{
+		return context != nullptr &&
+			InputHandler::GetInstance()->IsKeyDown(static_cast<SDL_Scancode>(keyCode));
+	}
+
+	uint8_t MODWIN_ABI_CALL Engine::ApiInputKeyPressed(
+		void* context, const uint32_t keyCode) noexcept
+	{
+		return context != nullptr &&
+			InputHandler::GetInstance()->WasKeyPressed(static_cast<SDL_Scancode>(keyCode));
+	}
+
+	uint8_t MODWIN_ABI_CALL Engine::ApiInputKeyReleased(
+		void* context, const uint32_t keyCode) noexcept
+	{
+		return context != nullptr &&
+			InputHandler::GetInstance()->WasKeyReleased(static_cast<SDL_Scancode>(keyCode));
+	}
+
+	ModwinResult MODWIN_ABI_CALL Engine::ApiLoadTexture(
+		void* context,
+		const char* textureId,
+		const char* resourceDirectory) noexcept
+	{
+		if (context == nullptr || textureId == nullptr || textureId[0] == '\0' ||
+			resourceDirectory == nullptr || resourceDirectory[0] == '\0')
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		try
+		{
+			return TextureManager::GetInstance()->Load(textureId, resourceDirectory)
+				? MODWIN_RESULT_OK
+				: MODWIN_RESULT_NOT_FOUND;
+		}
+		catch (...)
+		{
+			return MODWIN_RESULT_INTERNAL_ERROR;
+		}
+	}
+
+	ModwinEntityHandle MODWIN_ABI_CALL Engine::ApiCreateEntity(
+		void* context, const ModwinEntityCreateInfo* createInfo) noexcept
+	{
+		if (context == nullptr || createInfo == nullptr ||
+			createInfo->struct_size < MODWIN_ENTITY_CREATE_INFO_V1_SIZE ||
+			(createInfo->flags & ~MODWIN_ENTITY_HAS_KINEMATIC_BODY) != 0U ||
+			(createInfo->flip_mode & ~(MODWIN_FLIP_HORIZONTAL | MODWIN_FLIP_VERTICAL)) != 0U ||
+			createInfo->texture_id == nullptr || createInfo->texture_id[0] == '\0' ||
+			!std::isfinite(createInfo->position.x) ||
+			!std::isfinite(createInfo->position.y) ||
+			!std::isfinite(createInfo->sprite_size.x) ||
+			!std::isfinite(createInfo->sprite_size.y) ||
+			createInfo->sprite_size.x <= 0.0F || createInfo->sprite_size.y <= 0.0F ||
+			!std::isfinite(createInfo->maximum_speed) || createInfo->maximum_speed < 0.0F ||
+			!std::isfinite(createInfo->acceleration) || createInfo->acceleration < 0.0F ||
+			!std::isfinite(createInfo->deceleration) || createInfo->deceleration < 0.0F)
+		{
+			return MODWIN_INVALID_ENTITY_HANDLE;
+		}
+		try
+		{
+			return static_cast<Engine*>(context)->m_RuntimeWorld.CreateEntity(*createInfo);
+		}
+		catch (...)
+		{
+			return MODWIN_INVALID_ENTITY_HANDLE;
+		}
+	}
+
+	ModwinResult MODWIN_ABI_CALL Engine::ApiDestroyEntity(
+		void* context, const ModwinEntityHandle entity) noexcept
+	{
+		if (context == nullptr || entity == MODWIN_INVALID_ENTITY_HANDLE)
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		return static_cast<Engine*>(context)->m_RuntimeWorld.DestroyEntity(entity)
+			? MODWIN_RESULT_OK
+			: MODWIN_RESULT_NOT_FOUND;
+	}
+
+	ModwinResult MODWIN_ABI_CALL Engine::ApiGetEntityPosition(
+		void* context, const ModwinEntityHandle entity, ModwinVec2* position) noexcept
+	{
+		if (context == nullptr || entity == MODWIN_INVALID_ENTITY_HANDLE || position == nullptr)
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		Vector2D enginePosition;
+		if (!static_cast<Engine*>(context)->m_RuntimeWorld.GetPosition(entity, enginePosition))
+		{
+			return MODWIN_RESULT_NOT_FOUND;
+		}
+		position->x = enginePosition.X;
+		position->y = enginePosition.Y;
+		return MODWIN_RESULT_OK;
+	}
+
+	ModwinResult MODWIN_ABI_CALL Engine::ApiSubmitEntityCommands(
+		void* context,
+		const ModwinEntityCommand* commands,
+		const uint32_t commandCount) noexcept
+	{
+		if (context == nullptr || (commandCount > 0U && commands == nullptr))
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+
+		Engine& engine = *static_cast<Engine*>(context);
+		try
+		{
+			for (uint32_t index = 0; index < commandCount; ++index)
+			{
+				const ModwinEntityCommand& command = commands[index];
+				if (command.struct_size < MODWIN_ENTITY_COMMAND_V1_SIZE ||
+					command.entity == MODWIN_INVALID_ENTITY_HANDLE)
+				{
+					return MODWIN_RESULT_INVALID_ARGUMENT;
+				}
+
+				bool applied = false;
+				switch (command.type)
+				{
+				case MODWIN_COMMAND_SET_KINEMATIC_INPUT:
+					if (!std::isfinite(command.value0) || !std::isfinite(command.value1))
+					{
+						return MODWIN_RESULT_INVALID_ARGUMENT;
+					}
+					applied = engine.m_RuntimeWorld.SetKinematicInput(
+						command.entity, {command.value0, command.value1});
+					break;
+				case MODWIN_COMMAND_SET_ANIMATION:
+					if (command.data0 > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
+						command.data1 == 0U ||
+						command.data1 > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
+						command.data2 == 0U ||
+						command.data2 > static_cast<uint32_t>(std::numeric_limits<int>::max()))
+					{
+						return MODWIN_RESULT_INVALID_ARGUMENT;
+					}
+					applied = engine.m_RuntimeWorld.SetAnimation(
+						command.entity,
+						static_cast<int>(command.data0),
+						static_cast<int>(command.data1),
+						static_cast<int>(command.data2));
+					break;
+				case MODWIN_COMMAND_SET_POSITION:
+					if (!std::isfinite(command.value0) || !std::isfinite(command.value1))
+					{
+						return MODWIN_RESULT_INVALID_ARGUMENT;
+					}
+					applied = engine.m_RuntimeWorld.SetPosition(
+						command.entity, {command.value0, command.value1});
+					break;
+				default:
+					return MODWIN_RESULT_INVALID_ARGUMENT;
+				}
+
+				if (!applied)
+				{
+					return MODWIN_RESULT_NOT_FOUND;
+				}
+			}
+			return MODWIN_RESULT_OK;
+		}
+		catch (...)
+		{
+			return MODWIN_RESULT_INTERNAL_ERROR;
+		}
+	}
+
 	void Engine::HandlePlayModeTransition()
 	{
 		if (m_EditorState.mode == m_PreviousEditorMode)
@@ -337,11 +635,23 @@ namespace Modwin
 		m_FixedStepAccumulator = 0.0F;
 		if (m_EditorState.mode == EditorMode::Play && m_ActiveDocument.has_value())
 		{
-			m_GameLayer->EnterPlay(m_ActiveDocument->map);
+			m_RuntimeWorld.Clear();
+			const ModwinMapInfo mapInfo{
+				static_cast<uint32_t>(sizeof(ModwinMapInfo)),
+				m_ActiveDocument->map.GetWidth(),
+				m_ActiveDocument->map.GetHeight(),
+				m_ActiveDocument->map.GetTileWidth(),
+				m_ActiveDocument->map.GetTileHeight()};
+			HandleGameResult(
+				m_GameApi.enter_play(m_GameApi.game_context, &mapInfo),
+				"enter play mode");
 		}
 		else
 		{
-			m_GameLayer->ExitPlay();
+			HandleGameResult(
+				m_GameApi.exit_play(m_GameApi.game_context),
+				"exit play mode");
+			m_RuntimeWorld.Clear();
 		}
 		m_PreviousEditorMode = m_EditorState.mode;
 	}
