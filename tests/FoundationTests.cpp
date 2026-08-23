@@ -1,10 +1,11 @@
 #include "component/KinematicBodyComponent.h"
-#include "entity/EntityManager.h"
 #include "game/InputBindings.h"
+#include "modwin/abi/ModwinGameApi.h"
 #include "physics/KinematicMovement.h"
 #include "physics/RigidBody.h"
 #include "physics/Transform.h"
 #include "physics/Vector2D.h"
+#include "runtime/RuntimeWorld.h"
 
 #include <cmath>
 #include <iostream>
@@ -81,23 +82,34 @@ int main()
 		"Movement distance should not depend on render/update frequency.");
 
 	Modwin::InputBindings bindings;
-	bindings.Set(Modwin::GameAction::MoveLeft, SDL_SCANCODE_LEFT);
+	bindings.Set(Modwin::GameAction::MoveLeft, MODWIN_KEY_D);
 	passed &= Check(
-		bindings.Get(Modwin::GameAction::MoveLeft) == SDL_SCANCODE_LEFT,
+		bindings.Get(Modwin::GameAction::MoveLeft) == MODWIN_KEY_D,
 		"Changing a binding should replace its previous key.");
 
-	Modwin::EntityManager entities;
-	Modwin::EntityDescriptor descriptor;
-	auto& firstEntity = entities.CreateEntity("test", descriptor);
-	passed &= Check(firstEntity.GetId() == 1, "The first runtime entity should receive ID 1.");
+	ModwinEntityCreateInfo createInfo{};
+	createInfo.struct_size = static_cast<uint32_t>(sizeof(ModwinEntityCreateInfo));
+	createInfo.position = {4.0F, 8.0F};
+	createInfo.sprite_size = {16.0F, 16.0F};
+	createInfo.texture_id = "test";
+	Modwin::RuntimeWorld runtimeWorld;
+	const ModwinEntityHandle firstEntity = runtimeWorld.CreateEntity(createInfo);
 	passed &= Check(
-		entities.FindByTag("test").size() == 1,
-		"Entity lookup should return entities with a matching tag.");
-	entities.Clear();
-	auto& resetEntity = entities.CreateEntity("test", descriptor);
+		firstEntity != MODWIN_INVALID_ENTITY_HANDLE && runtimeWorld.IsAlive(firstEntity),
+		"Creating a runtime entity should return a live opaque handle.");
+	Modwin::Vector2D entityPosition;
 	passed &= Check(
-		resetEntity.GetId() == 1,
-		"Clearing a runtime world should reset its local entity ID sequence.");
+		runtimeWorld.GetPosition(firstEntity, entityPosition) &&
+		entityPosition.NearlyEquals({4.0F, 8.0F}),
+		"Runtime entity state should be accessible through its handle.");
+	runtimeWorld.Clear();
+	passed &= Check(
+		!runtimeWorld.IsAlive(firstEntity),
+		"Clearing a runtime world should invalidate existing handles.");
+	const ModwinEntityHandle replacementEntity = runtimeWorld.CreateEntity(createInfo);
+	passed &= Check(
+		replacementEntity != firstEntity && runtimeWorld.IsAlive(replacementEntity),
+		"Reused entity slots should receive a new generation handle.");
 
 	return passed ? 0 : 1;
 }
