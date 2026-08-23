@@ -1,9 +1,11 @@
 #include "core/Engine.h"
 #include "core/ResourcePaths.h"
+#include "game/GameSession.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#include <memory>
 #include <utility>
 
 int main(int argc, char** argv)
@@ -13,7 +15,7 @@ int main(int argc, char** argv)
 		: Modwin::CreateDefaultProjectContext();
 
 	auto* engine = Modwin::Engine::GetInstance();
-	if (!engine->Init(std::move(projectContext)))
+	if (!engine->Init(std::make_unique<Modwin::GameSession>(), std::move(projectContext)))
 	{
 		SDL_Quit();
 		return 1;

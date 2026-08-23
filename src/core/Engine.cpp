@@ -1,17 +1,17 @@
 #include "core/Engine.h"
+
 #include "Log.h"
-#include "entity/Entity.h"
-#include "entity/EntityManager.h"
-#include "graphics/MapParser.h"
 #include "graphics/MapDocument.h"
+#include "graphics/MapParser.h"
 #include "graphics/TextureManager.h"
 #include "input/InputHandler.h"
-#include "time/Time.h"
+
 #include <SDL3/SDL.h>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
+#include <algorithm>
 #include <utility>
 
 namespace Modwin
@@ -26,9 +26,17 @@ namespace Modwin
 		return m_IsRunning;
 	}
 
-	bool Engine::Init(ProjectContext projectContext)
+	bool Engine::Init(
+		std::unique_ptr<GameLayer> gameLayer,
+		ProjectContext projectContext)
 	{
 		Log::Init();
+		if (gameLayer == nullptr)
+		{
+			Log::GetCoreLogger()->error("A game layer is required to initialize the engine.");
+			return false;
+		}
+		m_GameLayer = std::move(gameLayer);
 		m_ProjectContext = projectContext.activeMapPath.empty()
 			? CreateDefaultProjectContext()
 			: std::move(projectContext);
@@ -54,12 +62,14 @@ namespace Modwin
 			m_Window = nullptr;
 			return false;
 		}
+		TextureManager::GetInstance()->SetRenderer(m_Renderer);
 
 		SDL_SetRenderVSync(m_Renderer, 1);
 
 		if (!InitImGui())
 		{
 			Log::GetCoreLogger()->error("Failed to initialize ImGui.");
+			TextureManager::GetInstance()->SetRenderer(nullptr);
 			SDL_DestroyRenderer(m_Renderer);
 			SDL_DestroyWindow(m_Window);
 			m_Renderer = nullptr;
@@ -67,10 +77,16 @@ namespace Modwin
 			return false;
 		}
 
-
-		if (!LoadResources())
+		if (!LoadProjectResources())
 		{
 			Log::GetCoreLogger()->error("Failed to load the initial project resources.");
+			Quit();
+			return false;
+		}
+
+		if (!m_GameLayer->Initialize())
+		{
+			Log::GetCoreLogger()->error("Failed to initialize the game layer.");
 			Quit();
 			return false;
 		}
@@ -109,6 +125,7 @@ namespace Modwin
 
 	void Engine::Run()
 	{
+		m_FrameClock.Reset();
 		while (m_IsRunning)
 		{
 			m_IsRunning = ProcessEvents();
@@ -117,8 +134,7 @@ namespace Modwin
 				break;
 			}
 
-			Time::GetInstance()->CalculateTickRate();
-			Update();
+			Update(m_FrameClock.Tick());
 			Render();
 		}
 	}
@@ -141,7 +157,7 @@ namespace Modwin
 		return false;
 	}
 
-	void Engine::Update()
+	void Engine::Update(const float frameDeltaSeconds)
 	{
 		ImGui_ImplSDLRenderer3_NewFrame();
 		ImGui_ImplSDL3_NewFrame();
@@ -173,17 +189,36 @@ namespace Modwin
 			}
 		}
 
-		const float deltaTime = Time::GetInstance()->GetDeltaTime();
 		if (m_ActiveDocument.has_value())
 		{
 			m_ActiveDocument->map.Update();
 		}
 
-		if (m_EditorState.mode == EditorMode::Play && !ImGui::GetIO().WantCaptureKeyboard)
+		HandlePlayModeTransition();
+		if (m_EditorState.mode == EditorMode::Play)
 		{
-			EntityManager::GetInstance()->Update(deltaTime);
+			m_GameLayer->CaptureInput(
+				*InputHandler::GetInstance(),
+				!ImGui::GetIO().WantCaptureKeyboard);
+
+			const float maximumAccumulatedTime =
+				FrameClock::FixedDeltaSeconds *
+				static_cast<float>(FrameClock::MaximumFixedStepsPerFrame);
+			m_FixedStepAccumulator = std::min(
+				m_FixedStepAccumulator + frameDeltaSeconds,
+				maximumAccumulatedTime);
+
+			int fixedSteps = 0;
+			while (m_FixedStepAccumulator >= FrameClock::FixedDeltaSeconds &&
+				fixedSteps < FrameClock::MaximumFixedStepsPerFrame)
+			{
+				m_GameLayer->FixedUpdate(FrameClock::FixedDeltaSeconds);
+				m_FixedStepAccumulator -= FrameClock::FixedDeltaSeconds;
+				++fixedSteps;
+			}
+			m_GameLayer->Update(frameDeltaSeconds);
 		}
-		else if (m_EditorState.mode == EditorMode::Edit && m_ActiveDocument.has_value())
+		else if (m_ActiveDocument.has_value())
 		{
 			m_EditorController.Update(m_EditorState, *m_ActiveDocument, m_MapViewport);
 		}
@@ -224,7 +259,7 @@ namespace Modwin
 			}
 			else if (!editing)
 			{
-				EntityManager::GetInstance()->Draw();
+				m_GameLayer->Render();
 			}
 
 			SDL_SetRenderScale(m_Renderer, 1.0F, 1.0F);
@@ -240,9 +275,14 @@ namespace Modwin
 	{
 		m_IsRunning = false;
 
-		EntityManager::GetInstance()->Clean();
+		if (m_GameLayer != nullptr)
+		{
+			m_GameLayer->Shutdown();
+			m_GameLayer.reset();
+		}
 		MapParser::GetInstance()->Clean();
 		TextureManager::GetInstance()->Clean();
+		TextureManager::GetInstance()->SetRenderer(nullptr);
 		m_ActiveDocument.reset();
 
 		if (ImGui::GetCurrentContext() != nullptr)
@@ -265,15 +305,8 @@ namespace Modwin
 		}
 	}
 
-	bool Engine::LoadResources()
+	bool Engine::LoadProjectResources()
 	{
-		Properties playerProperties(SDL_FLIP_NONE, 35, 45, 64, 64, "player", "sprites");
-		if (!TextureManager::GetInstance()->Load("player", playerProperties.m_Source))
-		{
-			return false;
-		}
-		EntityManager::GetInstance()->AddEntity("player", playerProperties);
-
 		auto tileMap = MapParser::LoadFromFile(m_ProjectContext.activeMapPath);
 		if (!tileMap.has_value())
 		{
@@ -292,5 +325,24 @@ namespace Modwin
 
 		m_ActiveDocument.emplace(m_ProjectContext.activeMapPath, std::move(*tileMap));
 		return true;
+	}
+
+	void Engine::HandlePlayModeTransition()
+	{
+		if (m_EditorState.mode == m_PreviousEditorMode)
+		{
+			return;
+		}
+
+		m_FixedStepAccumulator = 0.0F;
+		if (m_EditorState.mode == EditorMode::Play && m_ActiveDocument.has_value())
+		{
+			m_GameLayer->EnterPlay(m_ActiveDocument->map);
+		}
+		else
+		{
+			m_GameLayer->ExitPlay();
+		}
+		m_PreviousEditorMode = m_EditorState.mode;
 	}
 }
