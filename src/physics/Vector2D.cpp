@@ -1,28 +1,32 @@
 #include "physics/Vector2D.h"
-#include <iostream>
+
+#include <cmath>
 
 namespace Modwin
 {
-
-	double Vector2D::Length()
+	float Vector2D::LengthSquared() const noexcept
 	{
-		return 0;
+		return X * X + Y * Y;
 	}
 
-	void Vector2D::Normalize()
+	float Vector2D::Length() const noexcept
 	{
-
+		return std::sqrt(LengthSquared());
 	}
 
-	void Vector2D::Log()
+	Vector2D Vector2D::Normalized() const noexcept
 	{
-		std::cout << "Vector2D = {x = " << X << ", y = " << Y << "}" << std::endl;
+		const float length = Length();
+		return length > 0.0F ? *this / length : Vector2D{};
 	}
 
-	Vector2D::~Vector2D()
+	void Vector2D::Normalize() noexcept
 	{
-
+		*this = Normalized();
 	}
 
-
-} // Modwin
+	bool Vector2D::NearlyEquals(const Vector2D& other, const float epsilon) const noexcept
+	{
+		return std::abs(X - other.X) <= epsilon && std::abs(Y - other.Y) <= epsilon;
+	}
+}
