@@ -21,7 +21,7 @@ namespace Modwin{
 		inline void SetMass(float mass){m_Mass = mass;}
 		inline void SetGravity(float gravity){m_Gravity = gravity;}
 
-		inline void ApplyForce(const Vector2D& force){m_Force + force;}
+		inline void ApplyForce(const Vector2D& force){m_Force = m_Force + force;}
 		inline void ApplyForceX(float forceX){m_Force.X+=forceX;}
 		inline void ApplyForceY(float forceY){m_Force.Y+=forceY;}
 		inline void ResetForce(){m_Force = Vector2D(0, 0);}
@@ -42,6 +42,7 @@ namespace Modwin{
 			m_Acceleration.Y = (m_Force.Y + m_Friction.Y) / m_Mass;
 			m_Velocity = m_Acceleration * deltaTime;
 			m_Position = m_Velocity * deltaTime;
+
 		}
 
 
