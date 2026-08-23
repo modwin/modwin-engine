@@ -1,55 +1,41 @@
 #ifndef MODWIN_ENGINE_TRANSFORM_H
 #define MODWIN_ENGINE_TRANSFORM_H
 
-#include <physics/Vector2D.h>
-#include <iostream>
+#include "physics/Vector2D.h"
 
 namespace Modwin
 {
-
 	class Transform
 	{
-	private:
-		float m_X, m_Y;
-
-		inline void Translate(const Vector2D& vec)
-		{
-			m_X += vec.X;
-			m_Y += vec.Y;
-		}
-
 	public:
-		Transform(float x = 0, float y = 0) : m_X(x), m_Y(y){};
+		constexpr Transform() noexcept = default;
+		constexpr Transform(float x, float y) noexcept : m_Position(x, y) {}
+		explicit constexpr Transform(Vector2D position) noexcept : m_Position(position) {}
 
-		inline float GetX()
+		[[nodiscard]] constexpr const Vector2D& GetPosition() const noexcept
 		{
-			return m_X;
-		};
-
-		inline float GetY()
-		{
-			return m_Y;
+			return m_Position;
 		}
 
-		inline void TranslateX(float x)
+		[[nodiscard]] constexpr float GetX() const noexcept { return m_Position.X; }
+		[[nodiscard]] constexpr float GetY() const noexcept { return m_Position.Y; }
+
+		constexpr void SetPosition(const Vector2D position) noexcept
 		{
-			m_X += x;
+			m_Position = position;
 		}
 
-		inline void TranlateY(float y)
+		constexpr void Translate(const Vector2D offset) noexcept
 		{
-			m_Y += y;
+			m_Position += offset;
 		}
 
-		inline void Log()
-		{
-			std::cout << "Transform = {x = " << m_X << ", y = " << m_Y << "}" << std::endl;
-		}
+		constexpr void TranslateX(const float x) noexcept { m_Position.X += x; }
+		constexpr void TranslateY(const float y) noexcept { m_Position.Y += y; }
 
-
+	private:
+		Vector2D m_Position{};
 	};
-
 }
 
-
-#endif //MODWIN_ENGINE_TRANSFORM_H
+#endif // MODWIN_ENGINE_TRANSFORM_H
