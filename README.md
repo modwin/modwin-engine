@@ -1,8 +1,8 @@
 # Modwin Engine
 
-Modwin Engine is a learning-focused 2D game engine, runtime level editor, and game project written in C++17. The engine and the game are developed together: engine features are added to support a real playable game, while the game provides practical requirements that guide the engine's architecture.
+Modwin Engine is a learning-focused 2D game engine, runtime level editor, and game project. The engine runtime is written in C++17; gameplay currently has a native C++ reference implementation behind a versioned, C-compatible API. Engine features are added to support a real playable game, while the game provides practical requirements that guide the engine's architecture.
 
-The current focus is not to build a general-purpose engine. It is to make one polished 2D game with responsive movement, meaningful traversal, combat and NPC systems, and an editor that is useful and enjoyable to work in.
+The current focus is not to build a general-purpose commercial engine. It is to build a small, coherent, efficient engine for one polished 2D game, while preserving a boundary that could later host gameplay written in C#, Java, or another scripting language.
 
 > [!IMPORTANT]
 > Modwin Engine is an early working prototype under active development. Its APIs, file handling, gameplay systems, and editor workflow will continue to change.
@@ -28,11 +28,17 @@ Implemented foundations include:
 
 - SDL3 window creation, rendering, events, keyboard input, and vertical synchronization
 - SDL3_image texture loading from resolved filesystem paths
-- A delta-time game loop
-- Entity, character, and player abstractions
-- Basic transforms, rigid-body movement, force, velocity, and friction
-- Animated player sprite rendering
-- Configurable movement key bindings
+- A seconds-based frame clock and fixed 60 Hz gameplay simulation
+- Separate engine and gameplay CMake targets with no gameplay-to-engine-library dependency
+- A versioned C ABI made from fixed-width values, plain structs, function tables, and explicit result codes
+- Engine-owned runtime entities accessed by opaque, generation-checked 64-bit handles
+- Batched gameplay commands so language-boundary calls do not enter the native engine once per property
+- Disposable Play-mode state; stale handles are rejected after entities or the world are cleared
+- A single authoritative transform position for each entity
+- Kinematic character movement with acceleration, deceleration, and normalized diagonal input
+- Correct force accumulation and velocity integration for dynamic rigid bodies
+- Per-entity, delta-time-driven animation playback
+- Typed, replaceable game-action key bindings and pressed/released input edges
 - Runtime logging with spdlog
 - Explicit project, asset-root, and active-map paths
 - Edit and Play modes with separated editor and gameplay input
@@ -77,7 +83,8 @@ The editor is functional, but it is still a first version. It does not yet suppo
 
 | Component | Purpose |
 | --- | --- |
-| C++17 | Engine, editor, and game implementation |
+| C++17 | Native engine, editor, and reference game module |
+| C-compatible ABI | Language-neutral gameplay boundary |
 | CMake | Project configuration and builds |
 | SDL3 | Windowing, events, input, and 2D rendering |
 | SDL3_image | PNG and image loading |
@@ -94,15 +101,15 @@ Dear ImGui and its SDL3 renderer backends are vendored under `external/imgui`.
 ```text
 modwin-engine/
 |-- include/
-|   |-- cfg/                 Input configuration
-|   |-- character/           Character and player types
-|   |-- component/           Animation and component foundations
-|   |-- core/                Engine and project/resource context
+|   |-- component/           Reusable animation and movement data
+|   |-- core/                Engine lifecycle and project/resource context
 |   |-- editor/              Editor state, UI, camera, and controller
-|   |-- entity/              Entity model and entity manager
+|   |-- game/                Native reference game session and controls
 |   |-- graphics/            Textures, maps, tile layers, and persistence
 |   |-- input/               SDL event and keyboard handling
-|   |-- physics/             Vectors, transforms, and rigid-body prototype
+|   |-- modwin/abi/          Public, C-compatible engine/game contract
+|   |-- physics/             Math, transforms, kinematic motion, and rigid bodies
+|   |-- runtime/             Engine-owned entities and simulation state
 |   `-- time/                Frame timing
 |-- src/                     Implementations mirroring include/
 |-- tests/                   Coordinate, editing, and TMX round-trip tests
@@ -123,7 +130,13 @@ process SDL and ImGui events
 build the editor frame and map viewport
         |
         v
-update either editor tools or gameplay
+enter/exit disposable runtime Play state when the mode changes
+        |
+        v
+capture game input and submit gameplay commands through the ABI
+        |
+        v
+run zero or more fixed 60 Hz native simulation steps, or update editor tools
         |
         v
 render the map viewport and optional gameplay entities
@@ -133,6 +146,12 @@ render the ImGui interface and present the frame
 ```
 
 The active `MapDocument` owns the editable `TileMap`, its source path, and its dirty state. Parsing, editing, rendering, and serialization are separate responsibilities so that maps can be tested without requiring editor input.
+
+`modwin_engine` contains platform, editor, rendering, map, runtime-world, input, timing, and physics infrastructure. `modwin_gameplay` is a native reference client that compiles against only `ModwinGameApi.h`; it does not link to the engine library or include SDL and engine C++ classes. The executable supplies the game function table to the engine.
+
+Across that boundary, gameplay receives input snapshots, creates entities through descriptors, keeps opaque handles, and submits fixed-size command batches. The engine owns memory, physics, animation, rendering, textures, timing, and handle validation. C++ classes, virtual interfaces, STL containers, exceptions, allocators, and SDL types do not cross the ABI. Strings are UTF-8 and borrowed only for the documented call duration.
+
+This is an architectural seam, not a managed runtime integration yet. A future C# host would still need a .NET adapter/host, and Java would need an FFM or JNI adapter. Those adapters should translate managed data to the same C ABI in coarse batches. Per-entity physics and rendering should remain native; crossing the managed/native boundary for every component every frame would undermine both simplicity and performance.
 
 ## Building
 
@@ -229,7 +248,7 @@ ImGui mouse capture prevents clicks on the editor interface from painting the ma
 Build and run the current test target with:
 
 ```powershell
-cmake --build cmake-build-debug --target modwin_tests -j 4
+cmake --build cmake-build-debug -j 4
 ctest --test-dir cmake-build-debug --output-on-failure
 ```
 
@@ -243,17 +262,26 @@ The tests currently cover:
 - Detection of no-op tile writes
 - TMX parsing
 - TMX save/reload equivalence
+- Vector length, normalization, and comparison
+- Dynamic rigid-body force integration
+- Normalized, frame-rate-independent kinematic movement
+- Replaceable game-action bindings
+- Runtime entity creation, state access, and world clearing
+- Opaque runtime-handle generation and stale-handle rejection
+- Compilation of the public game API by a C compiler
+- Native game-module lifecycle and command submission against a fake ABI host
 
 ## Development roadmap
 
 ### Phase 1: game feel and engine fundamentals
 
-- Normalize and simplify player movement and physics updates
-- Add tile and entity collision detection
+- Add tile and entity collision detection and resolution to the fixed-step movement foundation
+- Add an engine-owned collision-world snapshot when entering Play mode
 - Add a player-centered gameplay camera
 - Create explicit animation and character state machines
-- Add input pressed/released edges and configurable mouse input
+- Add configurable mouse and controller input
 - Add debug rendering for collision, coordinates, and movement state
+- Add contract tests around the engine/game ABI and command validation
 - Establish repeatable gameplay tests where practical
 
 The objective of this phase is a small movement sandbox that already feels responsive and intentional.
@@ -332,7 +360,7 @@ The intended architecture is hybrid. Deterministic systems would own gameplay ru
 
 ## Known limitations
 
-- Gameplay movement and physics are prototypes and need structural cleanup.
+- Gameplay movement now has a fixed-step kinematic foundation, but still needs collision and tuning.
 - Collision detection and platforming behavior are not implemented.
 - Only one development map is currently included.
 - The editor viewport uses a fixed sidebar rather than a dockable render target.
@@ -340,7 +368,8 @@ The intended architecture is hybrid. Deterministic systems would own gameplay ru
 - TMX support targets finite orthogonal CSV tile maps and does not preserve every Tiled feature.
 - Diagonal Tiled flips are preserved in map data but are not fully rendered.
 - There is no undo/redo, entity placement, collision layer, or transition editing.
-- Engine, editor, and game boundaries are improving but remain early.
+- The native C++ reference game uses the C ABI, but dynamic module loading and Java/.NET hosts are not implemented.
+- ABI version 1 exposes only the small set of operations needed by the current movement prototype.
 - The dependency defaults in CMake are still specific to the current Windows development setup.
 
 ## Learning goals
@@ -353,6 +382,9 @@ This is a first game-engine project, so refactoring is an expected and valuable 
 - Use const-correct interfaces for read-only operations.
 - Keep parsing, runtime state, rendering, and serialization separate.
 - Keep gameplay rules independent from editor presentation.
+- Keep the public gameplay boundary C-compatible, versioned, and independent of SDL/STL object layouts.
+- Use opaque handles and explicit result codes at ownership boundaries.
+- Batch managed/native work and keep simulation-heavy loops in the engine.
 - Represent levels and transitions with stable data rather than hard-coded paths.
 - Design deterministic, testable systems before adding procedural or ML-driven behavior.
 - Keep changes small, buildable, and supported by focused tests.

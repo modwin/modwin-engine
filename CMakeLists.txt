@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(modwin_engine VERSION 0.1.0 LANGUAGES CXX)
+project(modwin_engine VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -50,16 +50,10 @@ target_include_directories(modwin_imgui PUBLIC external/imgui)
 target_link_libraries(modwin_imgui PUBLIC SDL3::SDL3)
 
 add_library(modwin_engine STATIC
-    src/cfg/Config.cpp
-    src/character/Character.cpp
-    src/character/Player.cpp
     src/component/Animation.cpp
-    src/component/Component.cpp
     src/core/Engine.cpp
     src/core/Log.cpp
     src/core/ResourcePaths.cpp
-    src/entity/Entity.cpp
-    src/entity/EntityManager.cpp
     src/graphics/MapDocument.cpp
     src/graphics/MapParser.cpp
     src/graphics/MapSerializer.cpp
@@ -67,17 +61,15 @@ add_library(modwin_engine STATIC
     src/graphics/TileCoordinate.cpp
     src/graphics/TileLayer.cpp
     src/input/InputHandler.cpp
-    src/physics/Physics.cpp
+    src/physics/KinematicMovement.cpp
     src/physics/RigidBody.cpp
-    src/physics/Transform.cpp
     src/physics/Vector2D.cpp
+    src/runtime/RuntimeWorld.cpp
     src/time/Time.cpp
     src/editor/EditorState.cpp
     src/editor/EditorUI.cpp
     src/editor/EditorCamera.cpp
     src/editor/EditorController.cpp
-        src/component/KinematicComponent.cpp
-        include/component/KinematicComponent.h
 )
 
 add_library(modwin::engine ALIAS modwin_engine)
@@ -93,12 +85,29 @@ target_link_libraries(modwin_engine
         modwin_imgui
 )
 
+add_library(modwin_gameplay STATIC
+    src/game/GameSession.cpp
+)
+
+add_library(modwin::gameplay ALIAS modwin_gameplay)
+
+target_include_directories(modwin_gameplay PUBLIC include)
+
 add_executable(modwin_game src/main.cpp)
-target_link_libraries(modwin_game PRIVATE modwin::engine)
+target_link_libraries(modwin_game PRIVATE modwin::engine modwin::gameplay)
 
 if(BUILD_TESTING)
     add_executable(modwin_tests tests/TileEditingTests.cpp)
     target_link_libraries(modwin_tests PRIVATE modwin::engine)
+
+    add_executable(modwin_foundation_tests tests/FoundationTests.cpp)
+    target_link_libraries(modwin_foundation_tests PRIVATE modwin::engine modwin::gameplay)
+
+    add_executable(modwin_abi_c_test tests/AbiCCompatibilityTest.c)
+    target_include_directories(modwin_abi_c_test PRIVATE include)
+
+    add_executable(modwin_game_module_tests tests/GameModuleContractTests.cpp)
+    target_link_libraries(modwin_game_module_tests PRIVATE modwin::gameplay)
 
     add_test(
         NAME modwin_tile_editing_tests
@@ -107,16 +116,37 @@ if(BUILD_TESTING)
             "${CMAKE_BINARY_DIR}/test-output"
     )
 
+    add_test(NAME modwin_foundation_tests COMMAND modwin_foundation_tests)
+    add_test(NAME modwin_abi_c_test COMMAND modwin_abi_c_test)
+    add_test(NAME modwin_game_module_tests COMMAND modwin_game_module_tests)
+
     get_filename_component(MODWIN_COMPILER_DIRECTORY "${CMAKE_CXX_COMPILER}" DIRECTORY)
-    set_tests_properties(modwin_tile_editing_tests PROPERTIES
+    set_tests_properties(
+        modwin_tile_editing_tests
+        modwin_foundation_tests
+        modwin_abi_c_test
+        modwin_game_module_tests
+        PROPERTIES
         ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:${MODWIN_COMPILER_DIRECTORY}"
     )
 endif()
 
-if(MSVC)
-    target_compile_options(modwin_engine PRIVATE /W4)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(modwin_engine PRIVATE -Wall -Wextra -Wpedantic)
+function(modwin_enable_warnings target_name)
+    if(MSVC)
+        target_compile_options(${target_name} PRIVATE /W4 /permissive-)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${target_name} PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+endfunction()
+
+modwin_enable_warnings(modwin_engine)
+modwin_enable_warnings(modwin_gameplay)
+modwin_enable_warnings(modwin_game)
+if(BUILD_TESTING)
+    modwin_enable_warnings(modwin_tests)
+    modwin_enable_warnings(modwin_foundation_tests)
+    modwin_enable_warnings(modwin_abi_c_test)
+    modwin_enable_warnings(modwin_game_module_tests)
 endif()
 
 # Place runtime libraries beside the executable for local development.
