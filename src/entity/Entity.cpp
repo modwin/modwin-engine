@@ -1,56 +1,40 @@
 #include "entity/Entity.h"
+
+#include "graphics/TextureManager.h"
+
 #include <utility>
 
 namespace Modwin
 {
+	Entity::Entity(std::string tag, const EntityId id, EntityDescriptor descriptor)
+		: m_Transform(descriptor.position),
+		  m_Descriptor(std::move(descriptor)),
+		  m_Id(id),
+		  m_Tag(std::move(tag))
+	{
+	}
 
-	Entity::Entity(std::string tag, const size_t id, const Properties& properties) : m_RigidBody(nullptr), m_Animation(nullptr),
-	                                                                     m_Transform(std::make_unique<Transform>(properties.x,
-		                                                                     properties.y)),
-	                                                                     m_Properties(properties), m_TextureID(properties.m_TextureID),
-	                                                                     m_Id(id),
-	                                                                     m_Tag(std::move(tag)),
-	                                                                     m_Exists(true)
+	void Entity::FixedUpdate(float)
+	{
+	}
+
+	void Entity::Update(float)
 	{
 	}
 
 	void Entity::Draw()
 	{
-		if(m_Animation != nullptr)
+		if (!m_Active)
 		{
-			m_Animation->Draw(m_Properties.x, m_Properties.y, m_Properties.w, m_Properties.h);
-		}
-		else
-		{
-			TextureManager::GetInstance()->Draw(m_TextureID, m_Properties.x, m_Properties.y, m_Properties.w, m_Properties.h);
-		}
-	}
-	void Entity::Update(float dt)
-	{
-		if(m_Animation)
-		{
-			m_Animation->Update();
+			return;
 		}
 
-		if(m_RigidBody)
-		{
-			m_RigidBody->Update(dt);
-		}
+		TextureManager::GetInstance()->Draw(
+			m_Descriptor.textureId,
+			m_Transform.GetX(),
+			m_Transform.GetY(),
+			m_Descriptor.spriteSize.X,
+			m_Descriptor.spriteSize.Y,
+			m_Descriptor.flipMode);
 	}
-
-	const std::string& Entity::GetTag() const noexcept
-	{
-		return m_Tag;
-	}
-
-	size_t Entity::GetId() const noexcept
-	{
-		return m_Id;
-	}
-
-	bool Entity::Exists() const noexcept
-	{
-		return m_Exists;
-	}
-
-} // Modwin
+}
