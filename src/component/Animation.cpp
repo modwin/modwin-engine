@@ -1,27 +1,68 @@
 #include "component/Animation.h"
 
+#include "graphics/TextureManager.h"
+
+#include <algorithm>
 #include <utility>
 
 namespace Modwin
 {
-	void Animation::SetValues(std::string id, int spriteRow, int frameCount, int animationSpeed, SDL_FlipMode flipMode)
+	void Animation::SetValues(
+		std::string textureId,
+		const int spriteRow,
+		const int frameCount,
+		const int frameDurationMilliseconds,
+		const SDL_FlipMode flipMode)
 	{
-		m_TextureID = std::move(id);
+		const int validFrameCount = std::max(1, frameCount);
+		const float validFrameDuration =
+			static_cast<float>(std::max(1, frameDurationMilliseconds)) / 1000.0F;
+		const bool changed = m_TextureId != textureId || m_SpriteRow != spriteRow ||
+			m_FrameCount != validFrameCount || m_FrameDurationSeconds != validFrameDuration ||
+			m_FlipMode != flipMode;
+
+		m_TextureId = std::move(textureId);
 		m_SpriteRow = spriteRow;
-		m_FrameCount = frameCount;
+		m_FrameCount = validFrameCount;
+		m_FrameDurationSeconds = validFrameDuration;
 		m_FlipMode = flipMode;
-		m_AnimationSpeed = animationSpeed;
+
+		if (changed)
+		{
+			m_SpriteFrame = 0;
+			m_ElapsedSeconds = 0.0F;
+		}
 	}
 
-	void Animation::Draw(float x, float y, float spriteW, float spriteH) const
+	void Animation::Draw(
+		const float x,
+		const float y,
+		const float spriteWidth,
+		const float spriteHeight) const
 	{
-		TextureManager::GetInstance()->DrawFrame(m_TextureID, x, y, spriteW, spriteH, m_SpriteRow, m_SpriteFrame, m_FlipMode);
-//		TextureManager::GetInstance()->Draw(m_TextureID,x, y, spriteW, spriteH, m_FlipMode);
+		TextureManager::GetInstance()->DrawFrame(
+			m_TextureId,
+			x,
+			y,
+			spriteWidth,
+			spriteHeight,
+			m_SpriteRow,
+			m_SpriteFrame,
+			m_FlipMode);
 	}
 
-	void Animation::Update()
+	void Animation::Update(const float deltaSeconds) noexcept
 	{
-		m_SpriteFrame = (SDL_GetTicks() / m_AnimationSpeed) % m_FrameCount;
+		if (deltaSeconds <= 0.0F || m_FrameCount <= 1)
+		{
+			return;
+		}
 
+		m_ElapsedSeconds += deltaSeconds;
+		while (m_ElapsedSeconds >= m_FrameDurationSeconds)
+		{
+			m_ElapsedSeconds -= m_FrameDurationSeconds;
+			m_SpriteFrame = (m_SpriteFrame + 1) % m_FrameCount;
+		}
 	}
-} // Modwin
+}
