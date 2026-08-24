@@ -1,7 +1,7 @@
 #ifndef MODWIN_ENGINE_KINEMATICMOVEMENT_H
 #define MODWIN_ENGINE_KINEMATICMOVEMENT_H
 
-#include "component/KinematicComponent.h"
+#include "component/KinematicBodyComponent.h"
 #include "physics/Transform.h"
 
 namespace Modwin
