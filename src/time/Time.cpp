@@ -1,31 +1,30 @@
 #include "time/Time.h"
+
 #include <SDL3/SDL.h>
+
+#include <algorithm>
 
 namespace Modwin
 {
-	Time* Time::s_INSTANCE = nullptr;
-
-	Time* Time::GetInstance()
+	void FrameClock::Reset() noexcept
 	{
-		if(s_INSTANCE == nullptr)
-		{
-			s_INSTANCE = new Time();
-		}
-		return s_INSTANCE;
+		m_PreviousTicks = SDL_GetTicksNS();
 	}
 
-	void Time::CalculateTickRate()
+	float FrameClock::Tick() noexcept
 	{
-		m_DeltaTime = (SDL_GetTicks() - m_LastTime) * FPS_LIMIT / 1000.0f;
-
-		if(m_DeltaTime > DELTA_TIME_MAX)
+		const std::uint64_t currentTicks = SDL_GetTicksNS();
+		if (m_PreviousTicks == 0)
 		{
-			m_DeltaTime = DELTA_TIME_MAX;
+			m_PreviousTicks = currentTicks;
+			return 0.0F;
 		}
 
-		m_LastTime = SDL_GetTicks();
-
+		const std::uint64_t elapsedTicks = currentTicks - m_PreviousTicks;
+		m_PreviousTicks = currentTicks;
+		constexpr double nanosecondsToSeconds = 1.0 / 1'000'000'000.0;
+		const float elapsedSeconds =
+			static_cast<float>(static_cast<double>(elapsedTicks) * nanosecondsToSeconds);
+		return std::clamp(elapsedSeconds, 0.0F, MaximumFrameDeltaSeconds);
 	}
-
-
 }
