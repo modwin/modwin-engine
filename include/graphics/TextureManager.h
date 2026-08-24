@@ -11,6 +11,7 @@ namespace Modwin
 	{
 		public:
 			static TextureManager* GetInstance();
+			void SetRenderer(SDL_Renderer* renderer) noexcept { m_Renderer = renderer; }
 
 			bool Load(const std::string& name, const std::string& directory);
 
@@ -39,5 +40,6 @@ namespace Modwin
 			[[nodiscard]] SDL_Texture* FindTexture(const std::string& id) const;
 
 			std::unordered_map<std::string, SDL_Texture*> m_Textures;
+			SDL_Renderer* m_Renderer = nullptr;
 	};
 }

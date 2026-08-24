@@ -1,6 +1,5 @@
 #include "graphics/TextureManager.h"
 #include "Log.h"
-#include "core/Engine.h"
 #include "core/ResourcePaths.h"
 #include <SDL3_image/SDL_image.h>
 
@@ -39,15 +38,14 @@ namespace Modwin
 			return false;
 		}
 
-		SDL_Renderer* renderer = Engine::GetInstance()->GetRenderer();
-		if (renderer == nullptr)
+		if (m_Renderer == nullptr)
 		{
 			SDL_DestroySurface(surface);
 			Log::GetCoreLogger()->error("Cannot create texture '{}' without an SDL renderer.", textureId);
 			return false;
 		}
 
-		SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+		SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 		SDL_DestroySurface(surface);
 
 		if (texture == nullptr)
@@ -111,7 +109,7 @@ namespace Modwin
 
 		const SDL_FRect source = {0, 0, width, height};
 		const SDL_FRect destination = {x, y, width, height};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
+		SDL_RenderTextureRotated(m_Renderer, texture, &source, &destination, 0, nullptr, flipMode);
 	}
 
 	void TextureManager::DrawFrame(const std::string& textureId, float x, float y, float width, float height,
@@ -125,7 +123,7 @@ namespace Modwin
 
 		const SDL_FRect source = {width * frame, height * spriteRow, width, height};
 		const SDL_FRect destination = {x, y, width, height};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
+		SDL_RenderTextureRotated(m_Renderer, texture, &source, &destination, 0, nullptr, flipMode);
 	}
 
 	void TextureManager::DrawTile(const std::string& textureId, int tileWidth, float x, float y, int row, int frame,
@@ -140,6 +138,6 @@ namespace Modwin
 		const auto size = static_cast<float>(tileWidth);
 		const SDL_FRect source = {size * frame, size * row, size, size};
 		const SDL_FRect destination = {x, y, size, size};
-		SDL_RenderTextureRotated(Engine::GetInstance()->GetRenderer(), texture, &source, &destination, 0, nullptr, flipMode);
+		SDL_RenderTextureRotated(m_Renderer, texture, &source, &destination, 0, nullptr, flipMode);
 	}
 }
