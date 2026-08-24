@@ -3,29 +3,31 @@
 
 #include <SDL3/SDL.h>
 
+#include <cstdint>
+#include <vector>
+
 namespace Modwin
 {
 	class InputHandler
 	{
 	public:
-
 		static InputHandler* GetInstance();
 
 		void ProcessEvents();
 		[[nodiscard]] bool ConsumeQuitRequest() noexcept;
-		[[nodiscard]] bool IsKeyDown(SDL_Scancode sdlKey) const;
+		[[nodiscard]] bool IsKeyDown(SDL_Scancode key) const noexcept;
+		[[nodiscard]] bool WasKeyPressed(SDL_Scancode key) const noexcept;
+		[[nodiscard]] bool WasKeyReleased(SDL_Scancode key) const noexcept;
 
 	private:
-		InputHandler(): m_KeyStates(SDL_GetKeyboardState(nullptr)){}
-		~InputHandler() = default;
+		InputHandler() = default;
 
-		const bool* m_KeyStates;
+		[[nodiscard]] bool IsValidKey(SDL_Scancode key) const noexcept;
+
+		std::vector<std::uint8_t> m_CurrentKeys;
+		std::vector<std::uint8_t> m_PreviousKeys;
 		bool m_QuitRequested = false;
-		static InputHandler* s_INSTANCE;
-
-
 	};
-}//Modwin
+}
 
-
-#endif //MODWIN_ENGINE_INPUTHANDLER_H
+#endif // MODWIN_ENGINE_INPUTHANDLER_H
