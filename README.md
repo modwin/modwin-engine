@@ -22,6 +22,13 @@ Once those foundations are solid, the project may explore deterministic seeded w
 
 The application opens an SDL3 window, loads a TMX map and its tileset textures, renders an animated player, and runs a custom Dear ImGui editor alongside the game.
 
+### Screenshots
+### Play-test mode, running an edited map file
+![Screenshot of Modwin Engine running](screenshots/play_mode_editor_interface.png "Screenshot of Modwin Engine & game running")
+
+#### Map editing mode
+![Screenshot of Modwin Engine running](screenshots/editing_mode_interface.png "Screenshot of Modwin Engine & game running")
+
 ### Engine and game
 
 Implemented foundations include:
