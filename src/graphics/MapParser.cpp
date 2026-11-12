@@ -134,9 +134,11 @@ namespace Modwin
 		int tileWidth = 0;
 		int tileHeight = 0;
 
-		const bool valid =
+		const bool validMap =
 			name != nullptr &&
-			imageSource != nullptr &&
+			imageSource != nullptr;
+
+		const bool validXml =
 			tilesetElement->QueryUnsignedAttribute("firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
 			tilesetElement->QueryIntAttribute("tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
 			tilesetElement->QueryIntAttribute("columns", &columnCount) == tinyxml2::XML_SUCCESS &&
@@ -144,7 +146,13 @@ namespace Modwin
 			tilesetElement->QueryIntAttribute("tileheight", &tileHeight) == tinyxml2::XML_SUCCESS &&
 			tileCount > 0 && columnCount > 0 && tileWidth > 0 && tileHeight > 0;
 
-		if (!valid)
+		if (!validMap)
+		{
+			Log::GetCoreLogger()->error("Map contains invalid tile property definitions.");
+			return std::nullopt;
+		}
+
+		if (!validXml)
 		{
 			Log::GetCoreLogger()->error("Map contains an invalid tileset definition.");
 			return std::nullopt;
