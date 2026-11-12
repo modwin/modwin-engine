@@ -1,15 +1,30 @@
 #ifndef MODWIN_ENGINE_COLLISIONWORLD_H
 #define MODWIN_ENGINE_COLLISIONWORLD_H
+#include "physics/Vector2D.h"
 #include "graphics/TileMap.h"
+#include <cstdint>
+#include <vector>
 
 namespace Modwin
 {
+	struct Aabb
+	{
+		Vector2D minimum;
+		Vector2D maximum;
+	};
+
+	struct CollisionShape
+	{
+		Vector2D offset;
+		Vector2D size;
+	};
+
 	class CollisionWorld
 	{
 		public:
 			bool BuildFromMap(const TileMap& map);
-			bool IsSolidTile(int column, int row) const noexcept;
-			bool OverlapsSolidTiles(const Aabb& box) const noexcept;
+			[[nodiscard]] bool IsSolidTile(int column, int row) const noexcept;
+			[[nodiscard]] bool OverlapsSolidTiles(const Aabb& box) const noexcept;
 
 		private:
 			int m_Width = 0;
