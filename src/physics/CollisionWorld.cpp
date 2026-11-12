@@ -42,7 +42,18 @@ namespace Modwin
 
 	bool CollisionWorld::IsSolidTile(int column, int row) const noexcept
 	{
-		return false;
+		if (column < 0 || column >= m_Width ||
+			row < 0 || row >= m_Height)
+		{
+			return true;
+		}
+
+		const std::size_t index =
+			static_cast<std::size_t>(row) *
+			static_cast<std::size_t>(m_Width) +
+			static_cast<std::size_t>(column);
+
+		return m_SolidTiles[index] != 0;
 	}
 
 	bool CollisionWorld::OverlapsSolidTiles(const Aabb& box) const noexcept
