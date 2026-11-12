@@ -45,7 +45,7 @@ namespace Modwin
 		bool InitImGui();
 		bool ProcessEvents();
 		bool LoadProjectResources();
-		bool ValidateGameApi(const ModwinGameApi& gameApi) const;
+		[[nodiscard]] bool ValidateGameApi(const ModwinGameApi& gameApi) const;
 		void BuildEngineApi() noexcept;
 		bool HandleGameResult(ModwinResult result, const char* operation);
 		void HandlePlayModeTransition();
