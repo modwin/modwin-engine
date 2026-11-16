@@ -13,7 +13,7 @@ namespace Modwin
 		const TileLayer* collisionLayer = nullptr;
 		for (const auto& layer : layers)
 		{
-			if (layer.GetName() == "Collision")
+			if (layer.ShouldRender())
 			{
 				collisionLayer = &layer;
 				break;
