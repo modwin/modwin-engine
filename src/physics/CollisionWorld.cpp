@@ -1,5 +1,6 @@
 #include "physics/CollisionWorld.h"
 #include "graphics/MapParser.h"
+#include "cmath"
 
 namespace Modwin
 {
