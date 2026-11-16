@@ -41,11 +41,13 @@ namespace Modwin
 		[[nodiscard]] bool SetTile(int column, int row, TileGid tileGid) noexcept;
 		[[nodiscard]] bool ContainsTile(int row, TileGid tileId) const noexcept;
 
-		[[nodiscard]] int GetWidth() const noexcept;
-		[[nodiscard]] int GetHeight() const noexcept;
-		[[nodiscard]] int GetTileWidth() const noexcept;
-		[[nodiscard]] const std::string& GetName() const noexcept;
-		[[nodiscard]] const std::vector<TileGid>& GetTiles() const noexcept;
+		[[nodiscard]] inline int GetWidth() const noexcept { return m_Width; }
+		[[nodiscard]] inline int GetHeight() const noexcept { return m_Height; }
+		[[nodiscard]] inline int GetTileWidth() const noexcept {return m_TileWidth;};
+		[[nodiscard]] inline const std::string& GetName() const noexcept {return m_Name;};
+		[[nodiscard]] inline const std::vector<TileGid>& GetTiles() const noexcept {return m_Tiles;};
+		[[nodiscard]] inline bool ShouldRender() const noexcept {return m_ShouldRender;};
+		[[nodiscard]] inline bool IsCollisionLayer() const noexcept {return !m_ShouldRender;};
 
 		void Update();
 		void Render(const TilesetVec& tilesets, float cameraX = 0.0F, float cameraY = 0.0F) const;
