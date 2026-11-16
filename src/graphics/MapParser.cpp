@@ -5,7 +5,9 @@
 
 #include <cstdint>
 #include <exception>
+#include <iostream>
 #include <limits>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -78,6 +80,7 @@ namespace Modwin
 			Log::GetCoreLogger()->error("Map '{}' has invalid dimensions.", source.string());
 			return std::nullopt;
 		}
+		Log::GetCoreLogger()->debug("Map height = '{}' ", mapWidth);
 
 		TileMap tileMap(mapWidth, mapHeight, mapTileWidth, mapTileHeight);
 
@@ -191,6 +194,14 @@ namespace Modwin
 			Log::GetCoreLogger()->error("Map contains an invalid tile-layer definition.");
 			return std::nullopt;
 		}
+		std::string layerName = name;
+		std::regex regex("Collision");
+		std::smatch match;
+		bool shouldRender = !std::regex_search(layerName, match, regex);
+		if (!shouldRender)
+		{
+			Log::GetCoreLogger()->error("Collision layer '{}' was loaded.", layerName);
+		}
 
 		const tinyxml2::XMLElement* dataElement = layerElement->FirstChildElement("data");
 		if (dataElement == nullptr || dataElement->GetText() == nullptr)
@@ -248,6 +259,6 @@ namespace Modwin
 			return std::nullopt;
 		}
 
-		return TileLayer(name, width, height, mapTileWidth, std::move(tiles));
+		return TileLayer(name, width, height, mapTileWidth, shouldRender, std::move(tiles));
 	}
 }
