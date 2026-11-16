@@ -34,7 +34,7 @@ namespace Modwin
 	class TileLayer
 	{
 	public:
-		TileLayer(std::string name, int width, int height, int tileWidth, std::vector<TileGid> tiles);
+		TileLayer(std::string name, int width, int height, int tileWidth, bool shouldRender, std::vector<TileGid> tiles);
 
 		[[nodiscard]] bool IsInBounds(int column, int row) const noexcept;
 		[[nodiscard]] TileGid GetTile(int column, int row) const;
@@ -57,6 +57,7 @@ namespace Modwin
 		int m_TileWidth = 0;
 		int m_Width = 0;
 		int m_Height = 0;
+		bool m_ShouldRender = false;
 		std::vector<TileGid> m_Tiles;
 	};
 }

@@ -13,11 +13,13 @@ namespace Modwin
 		const int width,
 		const int height,
 		const int tileWidth,
+		const bool shouldRender,
 		std::vector<TileGid> tiles)
 		: m_Name(std::move(name)),
 		  m_TileWidth(tileWidth),
 		  m_Width(width),
 		  m_Height(height),
+		  m_ShouldRender(shouldRender),
 		  m_Tiles(std::move(tiles))
 	{
 		if (m_Width <= 0 || m_Height <= 0 || m_TileWidth <= 0)
@@ -36,55 +38,60 @@ namespace Modwin
 	void TileLayer::Render(
 		const TilesetVec& tilesets, const float cameraX, const float cameraY) const
 	{
-		for (int row = 0; row < m_Height; ++row)
+		if (m_ShouldRender)
 		{
-			for (int column = 0; column < m_Width; ++column)
+			for (int row = 0; row < m_Height; ++row)
 			{
-				const TileGid rawGid = GetTile(column, row);
-				const TileGid tileId = rawGid & TileIdMask;
-				if (tileId == 0)
+				for (int column = 0; column < m_Width; ++column)
 				{
-					continue;
-				}
-
-				const auto tileset = std::find_if(
-					tilesets.begin(), tilesets.end(),
-					[tileId](const Tileset& candidate)
+					const TileGid rawGid = GetTile(column, row);
+					const TileGid tileId = rawGid & TileIdMask;
+					if (tileId == 0)
 					{
-						return tileId >= candidate.firstId && tileId <= candidate.lastId;
-					});
+						continue;
+					}
 
-				if (tileset == tilesets.end() || tileset->columnCount <= 0)
-				{
-					continue;
+					const auto tileset = std::find_if(
+						tilesets.begin(), tilesets.end(),
+						[tileId](const Tileset& candidate)
+						{
+							return tileId >= candidate.firstId && tileId <= candidate.lastId;
+						});
+
+					if (tileset == tilesets.end() || tileset->columnCount <= 0)
+					{
+						continue;
+					}
+
+					const TileGid localTileId = tileId - tileset->firstId;
+					const int sourceRow = static_cast<int>(localTileId) / tileset->columnCount;
+					const int sourceColumn = static_cast<int>(localTileId) % tileset->columnCount;
+
+					int flipFlags = SDL_FLIP_NONE;
+					if ((rawGid & FlipHorizontal) != 0)
+					{
+						flipFlags |= SDL_FLIP_HORIZONTAL;
+					}
+					if ((rawGid & FlipVertical) != 0)
+					{
+						flipFlags |= SDL_FLIP_VERTICAL;
+					}
+
+					// A diagonal Tiled flip also requires a 90-degree rotation. The raw
+					// flag remains in m_Tiles so it can be preserved when the map is saved.
+					TextureManager::GetInstance()->DrawTile(
+						tileset->name,
+						m_TileWidth,
+						static_cast<float>(column * m_TileWidth) - cameraX,
+						static_cast<float>(row * m_TileWidth) - cameraY,
+						sourceRow,
+						sourceColumn,
+						static_cast<SDL_FlipMode>(flipFlags));
 				}
-
-				const TileGid localTileId = tileId - tileset->firstId;
-				const int sourceRow = static_cast<int>(localTileId) / tileset->columnCount;
-				const int sourceColumn = static_cast<int>(localTileId) % tileset->columnCount;
-
-				int flipFlags = SDL_FLIP_NONE;
-				if ((rawGid & FlipHorizontal) != 0)
-				{
-					flipFlags |= SDL_FLIP_HORIZONTAL;
-				}
-				if ((rawGid & FlipVertical) != 0)
-				{
-					flipFlags |= SDL_FLIP_VERTICAL;
-				}
-
-				// A diagonal Tiled flip also requires a 90-degree rotation. The raw
-				// flag remains in m_Tiles so it can be preserved when the map is saved.
-				TextureManager::GetInstance()->DrawTile(
-					tileset->name,
-					m_TileWidth,
-					static_cast<float>(column * m_TileWidth) - cameraX,
-					static_cast<float>(row * m_TileWidth) - cameraY,
-					sourceRow,
-					sourceColumn,
-					static_cast<SDL_FlipMode>(flipFlags));
 			}
+
 		}
+
 	}
 
 	void TileLayer::Update()
