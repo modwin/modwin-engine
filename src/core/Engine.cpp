@@ -49,7 +49,7 @@ namespace Modwin
 			return false;
 		}
 
-		m_Window = SDL_CreateWindow("Modwin Engine", 1280, 720, SDL_WINDOW_RESIZABLE);
+		m_Window = SDL_CreateWindow("Modwin Engine", 1920, 1080, SDL_WINDOW_RESIZABLE);
 		if (m_Window == nullptr)
 		{
 			Log::GetCoreLogger()->error("Failed to create the window: {}", SDL_GetError());
@@ -231,7 +231,7 @@ namespace Modwin
 				{
 					return;
 				}
-				m_RuntimeWorld.FixedUpdate(FrameClock::FixedDeltaSeconds);
+				m_RuntimeWorld.FixedUpdate(FrameClock::FixedDeltaSeconds, m_GameState.collisionWorld);
 				m_FixedStepAccumulator -= FrameClock::FixedDeltaSeconds;
 				++fixedSteps;
 			}
@@ -635,6 +635,13 @@ namespace Modwin
 		m_FixedStepAccumulator = 0.0F;
 		if (m_EditorState.mode == EditorMode::Play && m_ActiveDocument.has_value())
 		{
+			if (!m_GameState.collisionWorld.BuildFromMap(m_ActiveDocument->map))
+			{
+				Log::GetCoreLogger()->error("Could not build collision world from map.");
+				m_IsRunning = false;
+				return;
+			}
+
 			m_RuntimeWorld.Clear();
 			const ModwinMapInfo mapInfo{
 				static_cast<uint32_t>(sizeof(ModwinMapInfo)),

@@ -100,12 +100,15 @@ typedef struct ModwinEntityCreateInfo
 	float deceleration;
 	uint32_t flip_mode;
 	const char* texture_id;
+	ModwinVec2 collision_offset;
+	ModwinVec2 collision_size;
 } ModwinEntityCreateInfo;
 
 // A fixed-size command avoids per-property interop calls. Command meanings:
 // KINEMATIC_INPUT: value0=x, value1=y
 // ANIMATION: data0=row, data1=frame count, data2=frame duration ms
 // POSITION: value0=x, value1=y
+// COLLISIONSHAPE: Vector0{x,y}, Vector1{x,y}
 typedef struct ModwinEntityCommand
 {
 	uint32_t struct_size;
