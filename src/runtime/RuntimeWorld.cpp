@@ -54,6 +54,15 @@ namespace Modwin
 			slot.kinematicBody.reset();
 		}
 
+		slot.collisionShape.offset = {
+			createInfo.collision_offset.x,
+			createInfo.collision_offset.y
+		};
+		slot.collisionShape.size = {
+			createInfo.collision_size.x,
+			createInfo.collision_size.y
+		};
+
 		slot.alive = true;
 		++m_LiveEntityCount;
 		return PackHandle(index, slot.generation);
@@ -143,7 +152,19 @@ namespace Modwin
 		return true;
 	}
 
-	void RuntimeWorld::FixedUpdate(const float deltaSeconds) noexcept
+	bool RuntimeWorld::SetCollisionShape(const ModwinEntityHandle handle, const CollisionShape& shape) noexcept
+	{
+		EntitySlot* slot = Resolve(handle);
+		if (slot == nullptr)
+		{
+			return false;
+		}
+		slot->collisionShape.offset = shape.offset;
+		slot->collisionShape.size = shape.size;
+		return true;
+	}
+
+	void RuntimeWorld::FixedUpdate(const float deltaSeconds, CollisionWorld& collisionWorld) noexcept
 	{
 		for (EntitySlot& slot : m_Slots)
 		{
@@ -153,6 +174,8 @@ namespace Modwin
 					*slot.kinematicBody,
 					slot.transform,
 					slot.desiredMovement,
+					collisionWorld,
+					slot.collisionShape,
 					deltaSeconds);
 			}
 		}

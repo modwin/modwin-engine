@@ -72,13 +72,15 @@ namespace Modwin
 		ModwinEntityCreateInfo createInfo{};
 		createInfo.struct_size = static_cast<uint32_t>(sizeof(ModwinEntityCreateInfo));
 		createInfo.flags = MODWIN_ENTITY_HAS_KINEMATIC_BODY;
-		createInfo.position = {35.0F, 45.0F};
+		createInfo.position = {400.0F, 500.0F};
 		createInfo.sprite_size = {64.0F, 64.0F};
 		createInfo.maximum_speed = 180.0F;
 		createInfo.acceleration = 1200.0F;
 		createInfo.deceleration = 1600.0F;
 		createInfo.flip_mode = MODWIN_FLIP_NONE;
 		createInfo.texture_id = "player";
+		createInfo.collision_offset = {20.0F, 44.0F};
+		createInfo.collision_size = {24.0F, 24.0F};
 		m_Player = m_Engine->create_entity(m_Engine->engine_context, &createInfo);
 		return m_Player != MODWIN_INVALID_ENTITY_HANDLE
 			? MODWIN_RESULT_OK
