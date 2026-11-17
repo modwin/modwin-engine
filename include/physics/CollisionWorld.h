@@ -7,16 +7,17 @@
 
 namespace Modwin
 {
-	struct Aabb
-	{
-		Vector2D minimum;
-		Vector2D maximum;
-	};
-
 	struct CollisionShape
 	{
 		Vector2D offset;
 		Vector2D size;
+	};
+
+	struct Aabb
+	{
+		[[nodiscard]] static Aabb MakeWorldAabb(Vector2D position, const CollisionShape& shape) noexcept;
+		Vector2D minimum;
+		Vector2D maximum;
 	};
 
 	class CollisionWorld
