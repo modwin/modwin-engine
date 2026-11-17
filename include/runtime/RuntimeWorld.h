@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "physics/CollisionWorld.h"
+
 namespace Modwin
 {
 	class RuntimeWorld
@@ -32,7 +34,9 @@ namespace Modwin
 			int frameCount,
 			int frameDurationMilliseconds);
 
-		void FixedUpdate(float deltaSeconds) noexcept;
+		[[nodiscard]] bool SetCollisionShape(ModwinEntityHandle handle, const CollisionShape& shape) noexcept;
+
+		void FixedUpdate(float deltaSeconds, CollisionWorld& collisionWorld) noexcept;
 		void Update(float deltaSeconds) noexcept;
 		void Render();
 		void Clear() noexcept;
@@ -42,6 +46,7 @@ namespace Modwin
 	private:
 		struct EntitySlot
 		{
+			CollisionShape collisionShape;
 			std::uint32_t generation = 1;
 			bool alive = false;
 			Transform transform;

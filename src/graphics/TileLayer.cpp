@@ -142,31 +142,6 @@ namespace Modwin
 		return std::find(first, last, tileId) != last;
 	}
 
-	int TileLayer::GetWidth() const noexcept
-	{
-		return m_Width;
-	}
-
-	int TileLayer::GetHeight() const noexcept
-	{
-		return m_Height;
-	}
-
-	int TileLayer::GetTileWidth() const noexcept
-	{
-		return m_TileWidth;
-	}
-
-	const std::string& TileLayer::GetName() const noexcept
-	{
-		return m_Name;
-	}
-
-	const std::vector<TileGid>& TileLayer::GetTiles() const noexcept
-	{
-		return m_Tiles;
-	}
-
 	std::size_t TileLayer::GetIndex(const int column, const int row) const noexcept
 	{
 		return static_cast<std::size_t>(row) * static_cast<std::size_t>(m_Width) +

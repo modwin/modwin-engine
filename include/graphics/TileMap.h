@@ -12,7 +12,7 @@ namespace Modwin
 	{
 	public:
 		TileMap() = default;
-		TileMap(int width, int height, int tileWidth, int tileHeight) noexcept
+		TileMap(const int width, const int height, const int tileWidth, const int tileHeight) noexcept
 			: m_Width(width),
 			  m_Height(height),
 			  m_TileWidth(tileWidth),
