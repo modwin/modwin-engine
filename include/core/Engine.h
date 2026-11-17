@@ -2,6 +2,7 @@
 
 #include "core/ResourcePaths.h"
 #include "editor/EditorController.h"
+#include "game/GameCamera.h"
 #include "editor/EditorState.h"
 #include "editor/EditorUI.h"
 #include "graphics/MapDocument.h"
@@ -10,6 +11,8 @@
 #include "time/Time.h"
 
 #include <optional>
+
+#include "game/GameState.h"
 
 struct SDL_Renderer;
 struct SDL_Window;
@@ -81,6 +84,7 @@ namespace Modwin
 		std::optional<MapDocument> m_ActiveDocument;
 		EditorState m_EditorState;
 		EditorMode m_PreviousEditorMode = EditorMode::Edit;
+		GameState m_GameState;
 		EditorUI m_EditorUI;
 		EditorController m_EditorController;
 		MapViewport m_MapViewport;
