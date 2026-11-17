@@ -33,9 +33,12 @@ namespace
 		body.maximumSpeed = 180.0F;
 		body.acceleration = 100'000.0F;
 		Modwin::Transform transform;
+		const Modwin::CollisionWorld collisionWorld;
+		const Modwin::CollisionShape collisionShape{};
 		for (int step = 0; step < steps; ++step)
 		{
-			Modwin::UpdateKinematicMovement(body, transform, {1.0F, 0.0F}, deltaSeconds);
+			Modwin::UpdateKinematicMovement(
+				body, transform, {1.0F, 0.0F}, collisionWorld, collisionShape, deltaSeconds);
 		}
 		return transform.GetPosition();
 	}
@@ -69,8 +72,15 @@ int main()
 	Modwin::KinematicBodyComponent diagonalBody;
 	diagonalBody.acceleration = 100'000.0F;
 	Modwin::Transform diagonalTransform;
+	const Modwin::CollisionWorld diagonalCollisionWorld;
+	const Modwin::CollisionShape diagonalCollisionShape{};
 	Modwin::UpdateKinematicMovement(
-		diagonalBody, diagonalTransform, {1.0F, 1.0F}, 1.0F / 60.0F);
+		diagonalBody,
+		diagonalTransform,
+		{1.0F, 1.0F},
+		diagonalCollisionWorld,
+		diagonalCollisionShape,
+		1.0F / 60.0F);
 	passed &= Check(
 		NearlyEqual(diagonalBody.velocity.Length(), diagonalBody.maximumSpeed),
 		"Diagonal movement should be normalized to maximum speed.");
