@@ -82,9 +82,14 @@ namespace Modwin
 		createInfo.collision_offset = {20.0F, 44.0F};
 		createInfo.collision_size = {24.0F, 24.0F};
 		m_Player = m_Engine->create_entity(m_Engine->engine_context, &createInfo);
+		if (m_Engine->set_camera_target != nullptr)
+		{
+			m_Engine->set_camera_target(m_Engine->engine_context, m_Player);
+		}
 		return m_Player != MODWIN_INVALID_ENTITY_HANDLE
 			? MODWIN_RESULT_OK
 			: MODWIN_RESULT_INTERNAL_ERROR;
+
 	}
 
 	ModwinResult GameSession::ExitPlay() noexcept
@@ -92,6 +97,7 @@ namespace Modwin
 		ModwinResult result = MODWIN_RESULT_OK;
 		if (m_Engine != nullptr && m_Player != MODWIN_INVALID_ENTITY_HANDLE)
 		{
+
 			result = m_Engine->destroy_entity(m_Engine->engine_context, m_Player);
 			if (result == MODWIN_RESULT_NOT_FOUND)
 			{
@@ -102,6 +108,10 @@ namespace Modwin
 		m_PendingInput = {};
 		m_FacingX = 0.0F;
 		m_FacingY = 1.0F;
+		if (m_Engine != nullptr && m_Engine->set_camera_target != nullptr)
+		{
+			m_Engine->set_camera_target(m_Engine->engine_context, MODWIN_INVALID_ENTITY_HANDLE);
+		}
 		return result;
 	}
 
