@@ -72,6 +72,7 @@ add_library(modwin_engine STATIC
         src/game/GameCamera.cpp
         include/game/GameCamera.h
         src/physics/CollisionWorld.cpp
+        src/camera/Camera2D.cpp
 )
 
 add_library(modwin::engine ALIAS modwin_engine)
@@ -89,7 +90,6 @@ target_link_libraries(modwin_engine
 
 add_library(modwin_gameplay STATIC
         src/game/GameSession.cpp
-        src/game/GameCamera.cpp
 )
 
 add_library(modwin::gameplay ALIAS modwin_gameplay)
