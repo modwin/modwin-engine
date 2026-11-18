@@ -63,8 +63,13 @@ namespace Modwin
 
 	bool CollisionWorld::OverlapsSolidTiles(const Aabb& box) const noexcept
 	{
+		if (m_Width <= 0 || m_Height <= 0 || m_TileWidth <= 0 || m_TileHeight <= 0 || m_SolidTiles.empty())
+		{
+			return false;
+		}
+
 		const int firstColumn =
-	static_cast<int>(std::floor(box.minimum.X / m_TileWidth));
+			static_cast<int>(std::floor(box.minimum.X / m_TileWidth));
 		const int lastColumn =
 			static_cast<int>(std::ceil(box.maximum.X / m_TileWidth)) - 1;
 
