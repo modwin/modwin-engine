@@ -1,29 +1,54 @@
 #include "game/GameCamera.h"
-#include <algorithm>
-#include "Log.h"
+#include "runtime/RuntimeWorld.h"
+#include "physics/Vector2D.h"
+#include <cmath>
 
 namespace Modwin
 {
-	void ClampEditorCamera(
-		GameCamera& camera,
+	void GameCamera::Update(
 		const MapViewport& viewport,
 		const float mapPixelWidth,
-		const float mapPixelHeight) noexcept
+		const float mapPixelHeight,
+		const float deltaSeconds,
+		const RuntimeWorld& runtimeWorld)
 	{
-		camera.zoom = std::clamp(camera.zoom, 0.25F, 4.0F);
-		if (viewport.width <= 0.0F || viewport.height <= 0.0F ||
-			mapPixelWidth <= 0.0F || mapPixelHeight <= 0.0F)
+		if (m_Mode == CameraFollowMode::FollowEntity)
 		{
-			camera.x = 0.0F;
-			camera.y = 0.0F;
-			return;
-		}
+			Vector2D targetPos{};
+			if (runtimeWorld.GetPosition(m_TargetEntity, targetPos))
+			{
+				const float visW = m_Camera.GetVisibleWidth(viewport);
+				const float visH = m_Camera.GetVisibleHeight(viewport);
 
-		const float visibleWorldWidth = viewport.width / camera.zoom;
-		const float visibleWorldHeight = viewport.height / camera.zoom;
-		const float maximumX = std::max(0.0F, mapPixelWidth - visibleWorldWidth);
-		const float maximumY = std::max(0.0F, mapPixelHeight - visibleWorldHeight);
-		camera.x = std::clamp(camera.x, 0.0F, maximumX);
-		camera.y = std::clamp(camera.y, 0.0F, maximumY);
+				const float deadzoneW = visW * m_Deadzone.widthPercent;
+				const float deadzoneH = visH * m_Deadzone.heightPercent;
+
+				const float deadzoneLeft = m_DesiredPosition.X + (visW - deadzoneW) * 0.5F;
+				const float deadzoneRight = deadzoneLeft + deadzoneW;
+				const float deadzoneTop = m_DesiredPosition.Y + (visH - deadzoneH) * 0.5F;
+				const float deadzoneBottom = deadzoneTop + deadzoneH;
+
+				if (targetPos.X < deadzoneLeft)
+					m_DesiredPosition.X -= (deadzoneLeft - targetPos.X);
+				else if (targetPos.X > deadzoneRight)
+					m_DesiredPosition.X += (targetPos.X - deadzoneRight);
+
+				if (targetPos.Y < deadzoneTop)
+					m_DesiredPosition.Y -= (deadzoneTop - targetPos.Y);
+				else if (targetPos.Y > deadzoneBottom)
+					m_DesiredPosition.Y += (targetPos.Y - deadzoneBottom);
+			}
+			else
+			{
+				m_Mode = CameraFollowMode::Manual;
+			}
+		}
+		const float t = 1.0F - std::exp(-m_SmoothSpeed * deltaSeconds);
+		m_Camera.position.X = Lerp(m_Camera.position.X, m_DesiredPosition.X, t);
+		m_Camera.position.Y = Lerp(m_Camera.position.Y, m_DesiredPosition.Y, t);
+
+		m_Camera.zoom = Lerp(m_Camera.zoom, m_TargetZoom, t);
+
+		m_Camera.ClampToMap(viewport, mapPixelWidth, mapPixelHeight);
 	}
 }

@@ -5,11 +5,7 @@
 
 namespace Modwin
 {
-	void ClampEditorCamera(
-		Camera2D& camera,
-		const MapViewport& viewport,
-		float mapPixelWidth,
-		float mapPixelHeight) noexcept;
+
 }
 
 #endif // MODWIN_ENGINE_EDITORCAMERA_H
