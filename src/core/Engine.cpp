@@ -230,7 +230,11 @@ namespace Modwin
 
 		const float mapWidth = m_ActiveDocument->map.GetWidth() * m_ActiveDocument->map.GetTileWidth();
 		const float mapHeight = m_ActiveDocument->map.GetHeight() * m_ActiveDocument->map.GetTileHeight();
-		m_GameState.camera.Update(m_MapViewport, mapWidth, mapHeight, frameDeltaSeconds, m_RuntimeWorld);
+		m_GameState.camera.Update(m_MapViewport,
+			mapWidth,
+			mapHeight,
+			frameDeltaSeconds,
+			m_RuntimeWorld);
 	}
 
 	void Engine::Render()
@@ -378,6 +382,7 @@ namespace Modwin
 		m_EngineApi.destroy_entity = &Engine::ApiDestroyEntity;
 		m_EngineApi.get_entity_position = &Engine::ApiGetEntityPosition;
 		m_EngineApi.submit_entity_commands = &Engine::ApiSubmitEntityCommands;
+		m_EngineApi.set_camera_target = &Engine::ApiSetCameraTarget;
 	}
 
 	bool Engine::HandleGameResult(const ModwinResult result, const char* operation)
@@ -598,6 +603,18 @@ namespace Modwin
 		{
 			return MODWIN_RESULT_INTERNAL_ERROR;
 		}
+	}
+
+	ModwinResult MODWIN_ABI_CALL Engine::ApiSetCameraTarget(
+		void* context, const ModwinEntityHandle entity) noexcept
+	{
+		if (context == nullptr)
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		auto* engine = static_cast<Engine*>(context);
+		engine->m_GameState.camera.SetFollowTarget(entity);
+		return MODWIN_RESULT_OK;
 	}
 
 	void Engine::HandlePlayModeTransition()
