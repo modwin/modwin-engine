@@ -46,6 +46,7 @@ namespace Modwin
 		}
 
 		SDL_Texture* texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
+		SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST);
 		SDL_DestroySurface(surface);
 
 		if (texture == nullptr)
