@@ -21,87 +21,108 @@ namespace Modwin
 {
 	class Engine
 	{
-	public:
-		Engine(const Engine&) = delete;
-		Engine& operator=(const Engine&) = delete;
+		public:
+			Engine(const Engine&) = delete;
 
-		static Engine* GetInstance()
-		{
-			static Engine instance;
-			return &instance;
-		}
+			Engine& operator=(const Engine&) = delete;
 
-		bool Init(
-			ModwinGameApi gameApi,
-			ProjectContext projectContext = {});
-		void Run();
-		void Quit();
+			static Engine* GetInstance()
+			{
+				static Engine instance;
+				return &instance;
+			}
 
-		[[nodiscard]] bool IsRunning() const noexcept;
-		[[nodiscard]] SDL_Renderer* GetRenderer() const noexcept;
+			bool Init(
+				ModwinGameApi gameApi,
+				ProjectContext projectContext = {});
 
-		~Engine() = default;
+			void Run();
 
-	private:
-		Engine() = default;
+			void Quit();
 
-		bool InitImGui();
-		bool ProcessEvents();
-		bool LoadProjectResources();
-		[[nodiscard]] bool ValidateGameApi(const ModwinGameApi& gameApi) const;
-		void BuildEngineApi() noexcept;
-		bool HandleGameResult(ModwinResult result, const char* operation);
-		void HandlePlayModeTransition();
-		Camera2D& GetActiveCamera();
+			[[nodiscard]] bool IsRunning() const noexcept;
 
-		void UpdatePlayMode(float frame_delta_seconds);
+			[[nodiscard]] SDL_Renderer* GetRenderer() const noexcept;
 
-		void UpdateEditMode(float frame_delta_seconds);
+			~Engine() = default;
 
-		void Update(float frameDeltaSeconds);
+		private:
+			Engine() = default;
 
-		void RenderEditorHighlights(float x, float y);
+			bool InitImGui();
 
-		void Render();
+			bool ProcessEvents();
 
-		static void MODWIN_ABI_CALL ApiLog(
-			void* context, uint32_t level, const char* message) noexcept;
-		static uint8_t MODWIN_ABI_CALL ApiInputKeyDown(
-			void* context, uint32_t keyCode) noexcept;
-		static uint8_t MODWIN_ABI_CALL ApiInputKeyPressed(
-			void* context, uint32_t keyCode) noexcept;
-		static uint8_t MODWIN_ABI_CALL ApiInputKeyReleased(
-			void* context, uint32_t keyCode) noexcept;
-		static ModwinResult MODWIN_ABI_CALL ApiLoadTexture(
-			void* context, const char* textureId, const char* resourceDirectory) noexcept;
-		static ModwinEntityHandle MODWIN_ABI_CALL ApiCreateEntity(
-			void* context, const ModwinEntityCreateInfo* createInfo) noexcept;
-		static ModwinResult MODWIN_ABI_CALL ApiDestroyEntity(
-			void* context, ModwinEntityHandle entity) noexcept;
-		static ModwinResult MODWIN_ABI_CALL ApiGetEntityPosition(
-			void* context, ModwinEntityHandle entity, ModwinVec2* position) noexcept;
-		static ModwinResult MODWIN_ABI_CALL ApiSubmitEntityCommands(
-			void* context,
-			const ModwinEntityCommand* commands,
-			uint32_t commandCount) noexcept;
+			bool LoadProjectResources();
 
-		ModwinGameApi m_GameApi{};
-		ModwinEngineApi m_EngineApi{};
-		RuntimeWorld m_RuntimeWorld;
-		bool m_GameInitialized = false;
-		ProjectContext m_ProjectContext;
-		std::optional<MapDocument> m_ActiveDocument;
-		EditorState m_EditorState;
-		EditorMode m_PreviousEditorMode = EditorMode::Edit;
-		GameState m_GameState;
-		EditorUI m_EditorUI;
-		EditorController m_EditorController;
-		MapViewport m_MapViewport;
-		FrameClock m_FrameClock;
-		float m_FixedStepAccumulator = 0.0F;
-		bool m_CloseConfirmationRequested = false;
-		SDL_Renderer* m_Renderer = nullptr;
-		SDL_Window* m_Window = nullptr;
-		bool m_IsRunning = false;
+			[[nodiscard]] bool ValidateGameApi(const ModwinGameApi& gameApi) const;
+
+			void BuildEngineApi() noexcept;
+
+			bool HandleGameResult(ModwinResult result, const char* operation);
+
+			void HandlePlayModeTransition();
+
+			Camera2D& GetActiveCamera();
+
+			void UpdatePlayMode(float frame_delta_seconds);
+
+			void UpdateEditMode(float frame_delta_seconds);
+
+			void Update(float frameDeltaSeconds);
+
+			void RenderEditorHighlights(float x, float y);
+
+			void Render();
+
+			static void MODWIN_ABI_CALL ApiLog(
+				void* context, uint32_t level, const char* message) noexcept;
+
+			static uint8_t MODWIN_ABI_CALL ApiInputKeyDown(
+				void* context, uint32_t keyCode) noexcept;
+
+			static uint8_t MODWIN_ABI_CALL ApiInputKeyPressed(
+				void* context, uint32_t keyCode) noexcept;
+
+			static uint8_t MODWIN_ABI_CALL ApiInputKeyReleased(
+				void* context, uint32_t keyCode) noexcept;
+
+			static ModwinResult MODWIN_ABI_CALL ApiLoadTexture(
+				void* context, const char* textureId, const char* resourceDirectory) noexcept;
+
+			static ModwinEntityHandle MODWIN_ABI_CALL ApiCreateEntity(
+				void* context, const ModwinEntityCreateInfo* createInfo) noexcept;
+
+			static ModwinResult MODWIN_ABI_CALL ApiDestroyEntity(
+				void* context, ModwinEntityHandle entity) noexcept;
+
+			static ModwinResult MODWIN_ABI_CALL ApiGetEntityPosition(
+				void* context, ModwinEntityHandle entity, ModwinVec2* position) noexcept;
+
+			static ModwinResult MODWIN_ABI_CALL ApiSubmitEntityCommands(
+				void* context,
+				const ModwinEntityCommand* commands,
+				uint32_t commandCount) noexcept;
+
+			static ModwinResult ApiSetCameraTarget(void* context, ModwinEntityHandle entity) noexcept;
+
+			ModwinGameApi m_GameApi{};
+			ModwinEngineApi m_EngineApi{};
+			RuntimeWorld m_RuntimeWorld;
+			bool m_GameInitialized = false;
+			ProjectContext m_ProjectContext;
+			std::optional<MapDocument> m_ActiveDocument;
+			EditorState m_EditorState;
+			EditorMode m_PreviousEditorMode = EditorMode::Edit;
+			GameState m_GameState;
+			EditorUI m_EditorUI;
+			EditorController m_EditorController;
+			MapViewport m_MapViewport;
+			FrameClock m_FrameClock;
+			float m_FixedStepAccumulator = 0.0F;
+			bool m_CloseConfirmationRequested = false;
+			SDL_Renderer* m_Renderer = nullptr;
+			SDL_Window* m_Window = nullptr;
+			bool m_IsRunning = false;
 	};
 }
