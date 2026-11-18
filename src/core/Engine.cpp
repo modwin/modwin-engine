@@ -255,7 +255,10 @@ namespace Modwin
 			const Camera2D& activeCamera = GetActiveCamera();
 
 			SDL_SetRenderScale(m_Renderer, activeCamera.zoom, activeCamera.zoom);
-			m_ActiveDocument->map.Render(activeCamera.position.X, activeCamera.position.Y);
+			const float cameraX = std::floor(activeCamera.position.X);
+			const float cameraY = std::floor(activeCamera.position.Y);
+
+			m_ActiveDocument->map.Render(cameraX, cameraY);
 
 			if (m_EditorState.mode == EditorMode::Edit)
 			{

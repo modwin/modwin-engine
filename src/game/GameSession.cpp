@@ -185,11 +185,11 @@ namespace Modwin
 		commands[1].type = MODWIN_COMMAND_SET_ANIMATION;
 		commands[1].entity = m_Player;
 		commands[1].data0 = animationRow;
-		commands[1].data1 = moving ? 9U : 2U;
+		commands[1].data1 = moving ? 9U : 1U;
 		commands[1].data2 = moving ? 80U : 250U;
 
 		const ModwinResult result = m_Engine->submit_entity_commands(
-			m_Engine->engine_context, commands, 2U);
+			m_Engine->engine_context, commands, 3U);
 		if (result == MODWIN_RESULT_OK)
 		{
 			m_PendingInput.attackPressed = false;
