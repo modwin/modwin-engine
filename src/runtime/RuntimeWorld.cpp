@@ -192,7 +192,7 @@ namespace Modwin
 		}
 	}
 
-	void RuntimeWorld::Render()
+	void RuntimeWorld::Render(float cameraX, float cameraY)
 	{
 		for (EntitySlot& slot : m_Slots)
 		{
@@ -203,8 +203,8 @@ namespace Modwin
 			if (slot.animation.has_value())
 			{
 				slot.animation->Draw(
-					slot.transform.GetX(),
-					slot.transform.GetY(),
+					slot.transform.GetX() - cameraX,
+					slot.transform.GetY() - cameraY,
 					slot.spriteSize.X,
 					slot.spriteSize.Y);
 			}
@@ -212,8 +212,8 @@ namespace Modwin
 			{
 				TextureManager::GetInstance()->Draw(
 					slot.textureId,
-					slot.transform.GetX(),
-					slot.transform.GetY(),
+					slot.transform.GetX() - cameraX,
+					slot.transform.GetY() - cameraY,
 					slot.spriteSize.X,
 					slot.spriteSize.Y,
 					slot.flipMode);
