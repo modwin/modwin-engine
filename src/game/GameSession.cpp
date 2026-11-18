@@ -85,6 +85,7 @@ namespace Modwin
 		if (m_Engine->set_camera_target != nullptr)
 		{
 			m_Engine->set_camera_target(m_Engine->engine_context, m_Player);
+			m_Engine->set_camera_zoom(m_Engine->engine_context, 2.0f);
 		}
 		return m_Player != MODWIN_INVALID_ENTITY_HANDLE
 			? MODWIN_RESULT_OK
