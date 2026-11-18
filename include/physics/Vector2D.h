@@ -75,6 +75,16 @@ namespace Modwin
 	{
 		return vector * scalar;
 	}
+
+	[[nodiscard]] inline constexpr float Lerp(const float a, const float b, const float t) noexcept
+	{
+		return a + (b - a) * t;
+	}
+
+	[[nodiscard]] inline Vector2D Lerp(const Vector2D a, const Vector2D b, const float t) noexcept
+	{
+		return {Lerp(a.X, b.X, t), Lerp(a.Y, b.Y, t)};
+	}
 }
 
 #endif // MODWIN_ENGINE_VECTOR2D_H
