@@ -386,6 +386,7 @@ namespace Modwin
 		m_EngineApi.get_entity_position = &Engine::ApiGetEntityPosition;
 		m_EngineApi.submit_entity_commands = &Engine::ApiSubmitEntityCommands;
 		m_EngineApi.set_camera_target = &Engine::ApiSetCameraTarget;
+		m_EngineApi.set_camera_zoom = &Engine::ApiSetCameraZoom;
 	}
 
 	bool Engine::HandleGameResult(const ModwinResult result, const char* operation)
@@ -606,6 +607,17 @@ namespace Modwin
 		{
 			return MODWIN_RESULT_INTERNAL_ERROR;
 		}
+	}
+
+	ModwinResult Engine::ApiSetCameraZoom(void* context, float targetZoom)
+	{
+		if (context == nullptr)
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		auto* engine = static_cast<Engine*>(context);
+		engine->m_GameState.camera.SetTargetZoom(targetZoom);
+		return MODWIN_RESULT_OK;
 	}
 
 	ModwinResult MODWIN_ABI_CALL Engine::ApiSetCameraTarget(

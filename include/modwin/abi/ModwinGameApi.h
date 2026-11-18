@@ -89,6 +89,7 @@ typedef struct ModwinMapInfo
 
 // All strings are UTF-8 and borrowed for the duration of the call. The engine
 // copies values it retains. The creating side owns all allocated memory.
+// COLLISIONSHAPE: Vector0{x,y}, Vector1{x,y}
 typedef struct ModwinEntityCreateInfo
 {
 	uint32_t struct_size;
@@ -108,7 +109,6 @@ typedef struct ModwinEntityCreateInfo
 // KINEMATIC_INPUT: value0=x, value1=y
 // ANIMATION: data0=row, data1=frame count, data2=frame duration ms
 // POSITION: value0=x, value1=y
-// COLLISIONSHAPE: Vector0{x,y}, Vector1{x,y}
 typedef struct ModwinEntityCommand
 {
 	uint32_t struct_size;
@@ -149,6 +149,10 @@ typedef struct ModwinEngineApi
 		void* engine_context, ModwinEntityHandle entity, ModwinVec2* position);
 	ModwinResult (MODWIN_ABI_CALL *submit_entity_commands)(
 		void* engine_context, const ModwinEntityCommand* commands, uint32_t command_count);
+	ModwinResult (MODWIN_ABI_CALL *set_camera_target)(
+		void* engine_context, ModwinEntityHandle entity);
+	ModwinResult (MODWIN_ABI_CALL *set_camera_zoom)(
+		void* engine_context, ModwinEntityHandle entity);
 } ModwinEngineApi;
 
 typedef struct ModwinGameApi
