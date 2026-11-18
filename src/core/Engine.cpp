@@ -5,6 +5,7 @@
 #include "graphics/MapParser.h"
 #include "graphics/TextureManager.h"
 #include "input/InputHandler.h"
+#include "camera/Camera2D.h"
 
 #include <SDL3/SDL.h>
 #include <imgui.h>
@@ -40,8 +41,8 @@ namespace Modwin
 		m_GameApi = gameApi;
 		BuildEngineApi();
 		m_ProjectContext = projectContext.activeMapPath.empty()
-			? CreateDefaultProjectContext()
-			: std::move(projectContext);
+			                   ? CreateDefaultProjectContext()
+			                   : std::move(projectContext);
 
 		if (!SDL_Init(SDL_INIT_VIDEO))
 		{
@@ -170,121 +171,95 @@ namespace Modwin
 		{
 			m_MapViewport = m_EditorUI.Draw(
 				m_EditorState, *m_ActiveDocument, *TextureManager::GetInstance());
-			ClampEditorCamera(
-				m_EditorState.camera,
-				m_MapViewport,
-				static_cast<float>(m_ActiveDocument->map.GetWidth() *
-					m_ActiveDocument->map.GetTileWidth()),
-				static_cast<float>(m_ActiveDocument->map.GetHeight() *
-					m_ActiveDocument->map.GetTileHeight()));
-
-			const CloseDecision closeDecision = m_EditorUI.DrawCloseConfirmation(
-				*m_ActiveDocument, m_CloseConfirmationRequested);
-			if (closeDecision == CloseDecision::SaveAndClose ||
-				closeDecision == CloseDecision::DiscardAndClose)
-			{
-				m_IsRunning = false;
-				m_CloseConfirmationRequested = false;
-			}
-			else if (closeDecision == CloseDecision::Cancel)
-			{
-				m_CloseConfirmationRequested = false;
-			}
-		}
-
-		if (m_ActiveDocument.has_value())
-		{
 			m_ActiveDocument->map.Update();
 		}
 
 		HandlePlayModeTransition();
-		if (!m_IsRunning)
+		if (!m_IsRunning || !m_ActiveDocument.has_value())
 		{
 			return;
 		}
+
 		if (m_EditorState.mode == EditorMode::Play)
 		{
-			if (!HandleGameResult(
-				m_GameApi.capture_input(
-					m_GameApi.game_context,
-					ImGui::GetIO().WantCaptureKeyboard ? 0U : 1U),
-				"capture input"))
-			{
-				return;
-			}
-
-			const float maximumAccumulatedTime =
-				FrameClock::FixedDeltaSeconds *
-				static_cast<float>(FrameClock::MaximumFixedStepsPerFrame);
-			m_FixedStepAccumulator = std::min(
-				m_FixedStepAccumulator + frameDeltaSeconds,
-				maximumAccumulatedTime);
-
-			int fixedSteps = 0;
-			while (m_FixedStepAccumulator >= FrameClock::FixedDeltaSeconds &&
-				fixedSteps < FrameClock::MaximumFixedStepsPerFrame)
-			{
-				if (!HandleGameResult(
-					m_GameApi.fixed_update(
-						m_GameApi.game_context, FrameClock::FixedDeltaSeconds),
-					"fixed update"))
-				{
-					return;
-				}
-				m_RuntimeWorld.FixedUpdate(FrameClock::FixedDeltaSeconds, m_GameState.collisionWorld);
-				m_FixedStepAccumulator -= FrameClock::FixedDeltaSeconds;
-				++fixedSteps;
-			}
-			if (!HandleGameResult(
-				m_GameApi.update(m_GameApi.game_context, frameDeltaSeconds),
-				"variable update"))
-			{
-				return;
-			}
-			m_RuntimeWorld.Update(frameDeltaSeconds);
+			UpdatePlayMode(frameDeltaSeconds);
 		}
-		else if (m_ActiveDocument.has_value())
+		else
 		{
-			m_EditorController.Update(m_EditorState, *m_ActiveDocument, m_MapViewport);
+			UpdateEditMode(frameDeltaSeconds);
 		}
+	}
+
+	void Engine::RenderEditorHighlights(float x, float y)
+	{
+		const auto tileWidth = static_cast<float>(m_ActiveDocument->map.GetTileWidth());
+		const auto tileHeight = static_cast<float>(m_ActiveDocument->map.GetTileHeight());
+		const SDL_FRect highlight{
+			static_cast<float>(m_EditorState.hoveredColumn) * tileWidth - x,
+			static_cast<float>(m_EditorState.hoveredRow) * tileHeight - y,
+			tileWidth,
+			tileHeight
+		};
+		SDL_SetRenderDrawColor(m_Renderer, 255, 214, 64, 255);
+		SDL_RenderRect(m_Renderer, &highlight);
+	}
+
+	void Engine::UpdateEditMode(float frameDeltaSeconds)
+	{
+		m_EditorController.Update(m_EditorState, *m_ActiveDocument, m_MapViewport);
+
+		const float mapWidth = m_ActiveDocument->map.GetWidth() * m_ActiveDocument->map.GetTileWidth();
+		const float mapHeight = m_ActiveDocument->map.GetHeight() * m_ActiveDocument->map.GetTileHeight();
+		m_EditorState.camera.ClampToMap(m_MapViewport, mapWidth, mapHeight);
+	}
+
+	void Engine::UpdatePlayMode(float frameDeltaSeconds)
+	{
+		m_GameApi.capture_input(m_GameApi.game_context, ImGui::GetIO().WantCaptureKeyboard ? 0U : 1U);
+
+		m_FixedStepAccumulator = std::min(m_FixedStepAccumulator + frameDeltaSeconds, 0.2F);
+		while (m_FixedStepAccumulator >= FrameClock::FixedDeltaSeconds)
+		{
+			m_GameApi.fixed_update(m_GameApi.game_context, FrameClock::FixedDeltaSeconds);
+			m_RuntimeWorld.FixedUpdate(FrameClock::FixedDeltaSeconds, m_GameState.collisionWorld);
+			m_FixedStepAccumulator -= FrameClock::FixedDeltaSeconds;
+		}
+
+		m_GameApi.update(m_GameApi.game_context, frameDeltaSeconds);
+		m_RuntimeWorld.Update(frameDeltaSeconds);
+
+		const float mapWidth = m_ActiveDocument->map.GetWidth() * m_ActiveDocument->map.GetTileWidth();
+		const float mapHeight = m_ActiveDocument->map.GetHeight() * m_ActiveDocument->map.GetTileHeight();
+		m_GameState.camera.Update(m_MapViewport, mapWidth, mapHeight, frameDeltaSeconds, m_RuntimeWorld);
 	}
 
 	void Engine::Render()
 	{
 		SDL_SetRenderDrawColor(m_Renderer, 24, 26, 32, 255);
 		SDL_RenderClear(m_Renderer);
-		if (m_ActiveDocument.has_value() &&
-			m_MapViewport.width > 0.0F && m_MapViewport.height > 0.0F)
+
+		if (m_ActiveDocument.has_value() && m_MapViewport.width > 0.0F && m_MapViewport.height > 0.0F)
 		{
 			const SDL_Rect viewportRect{
 				static_cast<int>(m_MapViewport.x),
 				static_cast<int>(m_MapViewport.y),
 				static_cast<int>(m_MapViewport.width),
-				static_cast<int>(m_MapViewport.height)};
+				static_cast<int>(m_MapViewport.height)
+			};
 			SDL_SetRenderViewport(m_Renderer, &viewportRect);
 
-			const bool editing = m_EditorState.mode == EditorMode::Edit;
-			const float zoom = editing ? m_EditorState.camera.zoom : 1.0F;
-			const float cameraX = editing ? m_EditorState.camera.x : 0.0F;
-			const float cameraY = editing ? m_EditorState.camera.y : 0.0F;
-			SDL_SetRenderScale(m_Renderer, zoom, zoom);
-			m_ActiveDocument->map.Render(cameraX, cameraY);
+			const Camera2D& activeCamera = GetActiveCamera();
 
-			if (editing && m_EditorState.hoveredColumn >= 0 && m_EditorState.hoveredRow >= 0)
+			SDL_SetRenderScale(m_Renderer, activeCamera.zoom, activeCamera.zoom);
+			m_ActiveDocument->map.Render(activeCamera.position.X, activeCamera.position.Y);
+
+			if (m_EditorState.mode == EditorMode::Edit)
 			{
-				const float tileWidth = static_cast<float>(m_ActiveDocument->map.GetTileWidth());
-				const float tileHeight = static_cast<float>(m_ActiveDocument->map.GetTileHeight());
-				const SDL_FRect highlight{
-					static_cast<float>(m_EditorState.hoveredColumn) * tileWidth - cameraX,
-					static_cast<float>(m_EditorState.hoveredRow) * tileHeight - cameraY,
-					tileWidth,
-					tileHeight};
-				SDL_SetRenderDrawColor(m_Renderer, 255, 214, 64, 255);
-				SDL_RenderRect(m_Renderer, &highlight);
+				RenderEditorHighlights(activeCamera.position.X, activeCamera.position.Y);
 			}
-			else if (!editing)
+			else
 			{
-				m_RuntimeWorld.Render();
+				m_RuntimeWorld.Render(activeCamera.position.X, activeCamera.position.Y);
 			}
 
 			SDL_SetRenderScale(m_Renderer, 1.0F, 1.0F);
@@ -347,10 +322,10 @@ namespace Modwin
 			return false;
 		}
 
-		for (const auto& tileset : tileMap->GetTilesets())
+		for (const auto& tileset: tileMap->GetTilesets())
 		{
 			const auto texturePath =
-				(m_ProjectContext.activeMapPath.parent_path() / tileset.source).lexically_normal();
+					(m_ProjectContext.activeMapPath.parent_path() / tileset.source).lexically_normal();
 			if (!TextureManager::GetInstance()->LoadFromFile(tileset.name, texturePath))
 			{
 				return false;
@@ -364,7 +339,7 @@ namespace Modwin
 	bool Engine::ValidateGameApi(const ModwinGameApi& gameApi) const
 	{
 		if (gameApi.abi_version != MODWIN_GAME_ABI_VERSION ||
-			gameApi.struct_size < MODWIN_GAME_API_V1_SIZE)
+		    gameApi.struct_size < MODWIN_GAME_API_V1_SIZE)
 		{
 			Log::GetCoreLogger()->error(
 				"The game module uses an incompatible ABI (version {}, size {}).",
@@ -374,13 +349,13 @@ namespace Modwin
 		}
 
 		const bool hasRequiredCallbacks =
-			gameApi.initialize != nullptr &&
-			gameApi.shutdown != nullptr &&
-			gameApi.enter_play != nullptr &&
-			gameApi.exit_play != nullptr &&
-			gameApi.capture_input != nullptr &&
-			gameApi.fixed_update != nullptr &&
-			gameApi.update != nullptr;
+				gameApi.initialize != nullptr &&
+				gameApi.shutdown != nullptr &&
+				gameApi.enter_play != nullptr &&
+				gameApi.exit_play != nullptr &&
+				gameApi.capture_input != nullptr &&
+				gameApi.fixed_update != nullptr &&
+				gameApi.update != nullptr;
 		if (!hasRequiredCallbacks)
 		{
 			Log::GetCoreLogger()->error("The game module is missing a required callback.");
@@ -455,21 +430,21 @@ namespace Modwin
 		void* context, const uint32_t keyCode) noexcept
 	{
 		return context != nullptr &&
-			InputHandler::GetInstance()->IsKeyDown(static_cast<SDL_Scancode>(keyCode));
+		       InputHandler::GetInstance()->IsKeyDown(static_cast<SDL_Scancode>(keyCode));
 	}
 
 	uint8_t MODWIN_ABI_CALL Engine::ApiInputKeyPressed(
 		void* context, const uint32_t keyCode) noexcept
 	{
 		return context != nullptr &&
-			InputHandler::GetInstance()->WasKeyPressed(static_cast<SDL_Scancode>(keyCode));
+		       InputHandler::GetInstance()->WasKeyPressed(static_cast<SDL_Scancode>(keyCode));
 	}
 
 	uint8_t MODWIN_ABI_CALL Engine::ApiInputKeyReleased(
 		void* context, const uint32_t keyCode) noexcept
 	{
 		return context != nullptr &&
-			InputHandler::GetInstance()->WasKeyReleased(static_cast<SDL_Scancode>(keyCode));
+		       InputHandler::GetInstance()->WasKeyReleased(static_cast<SDL_Scancode>(keyCode));
 	}
 
 	ModwinResult MODWIN_ABI_CALL Engine::ApiLoadTexture(
@@ -478,15 +453,15 @@ namespace Modwin
 		const char* resourceDirectory) noexcept
 	{
 		if (context == nullptr || textureId == nullptr || textureId[0] == '\0' ||
-			resourceDirectory == nullptr || resourceDirectory[0] == '\0')
+		    resourceDirectory == nullptr || resourceDirectory[0] == '\0')
 		{
 			return MODWIN_RESULT_INVALID_ARGUMENT;
 		}
 		try
 		{
 			return TextureManager::GetInstance()->Load(textureId, resourceDirectory)
-				? MODWIN_RESULT_OK
-				: MODWIN_RESULT_NOT_FOUND;
+				       ? MODWIN_RESULT_OK
+				       : MODWIN_RESULT_NOT_FOUND;
 		}
 		catch (...)
 		{
@@ -498,18 +473,18 @@ namespace Modwin
 		void* context, const ModwinEntityCreateInfo* createInfo) noexcept
 	{
 		if (context == nullptr || createInfo == nullptr ||
-			createInfo->struct_size < MODWIN_ENTITY_CREATE_INFO_V1_SIZE ||
-			(createInfo->flags & ~MODWIN_ENTITY_HAS_KINEMATIC_BODY) != 0U ||
-			(createInfo->flip_mode & ~(MODWIN_FLIP_HORIZONTAL | MODWIN_FLIP_VERTICAL)) != 0U ||
-			createInfo->texture_id == nullptr || createInfo->texture_id[0] == '\0' ||
-			!std::isfinite(createInfo->position.x) ||
-			!std::isfinite(createInfo->position.y) ||
-			!std::isfinite(createInfo->sprite_size.x) ||
-			!std::isfinite(createInfo->sprite_size.y) ||
-			createInfo->sprite_size.x <= 0.0F || createInfo->sprite_size.y <= 0.0F ||
-			!std::isfinite(createInfo->maximum_speed) || createInfo->maximum_speed < 0.0F ||
-			!std::isfinite(createInfo->acceleration) || createInfo->acceleration < 0.0F ||
-			!std::isfinite(createInfo->deceleration) || createInfo->deceleration < 0.0F)
+		    createInfo->struct_size < MODWIN_ENTITY_CREATE_INFO_V1_SIZE ||
+		    (createInfo->flags & ~MODWIN_ENTITY_HAS_KINEMATIC_BODY) != 0U ||
+		    (createInfo->flip_mode & ~(MODWIN_FLIP_HORIZONTAL | MODWIN_FLIP_VERTICAL)) != 0U ||
+		    createInfo->texture_id == nullptr || createInfo->texture_id[0] == '\0' ||
+		    !std::isfinite(createInfo->position.x) ||
+		    !std::isfinite(createInfo->position.y) ||
+		    !std::isfinite(createInfo->sprite_size.x) ||
+		    !std::isfinite(createInfo->sprite_size.y) ||
+		    createInfo->sprite_size.x <= 0.0F || createInfo->sprite_size.y <= 0.0F ||
+		    !std::isfinite(createInfo->maximum_speed) || createInfo->maximum_speed < 0.0F ||
+		    !std::isfinite(createInfo->acceleration) || createInfo->acceleration < 0.0F ||
+		    !std::isfinite(createInfo->deceleration) || createInfo->deceleration < 0.0F)
 		{
 			return MODWIN_INVALID_ENTITY_HANDLE;
 		}
@@ -531,8 +506,8 @@ namespace Modwin
 			return MODWIN_RESULT_INVALID_ARGUMENT;
 		}
 		return static_cast<Engine*>(context)->m_RuntimeWorld.DestroyEntity(entity)
-			? MODWIN_RESULT_OK
-			: MODWIN_RESULT_NOT_FOUND;
+			       ? MODWIN_RESULT_OK
+			       : MODWIN_RESULT_NOT_FOUND;
 	}
 
 	ModwinResult MODWIN_ABI_CALL Engine::ApiGetEntityPosition(
@@ -569,7 +544,7 @@ namespace Modwin
 			{
 				const ModwinEntityCommand& command = commands[index];
 				if (command.struct_size < MODWIN_ENTITY_COMMAND_V1_SIZE ||
-					command.entity == MODWIN_INVALID_ENTITY_HANDLE)
+				    command.entity == MODWIN_INVALID_ENTITY_HANDLE)
 				{
 					return MODWIN_RESULT_INVALID_ARGUMENT;
 				}
@@ -583,14 +558,14 @@ namespace Modwin
 						return MODWIN_RESULT_INVALID_ARGUMENT;
 					}
 					applied = engine.m_RuntimeWorld.SetKinematicInput(
-						command.entity, {command.value0, command.value1});
+						command.entity, { command.value0, command.value1 });
 					break;
 				case MODWIN_COMMAND_SET_ANIMATION:
 					if (command.data0 > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
-						command.data1 == 0U ||
-						command.data1 > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
-						command.data2 == 0U ||
-						command.data2 > static_cast<uint32_t>(std::numeric_limits<int>::max()))
+					    command.data1 == 0U ||
+					    command.data1 > static_cast<uint32_t>(std::numeric_limits<int>::max()) ||
+					    command.data2 == 0U ||
+					    command.data2 > static_cast<uint32_t>(std::numeric_limits<int>::max()))
 					{
 						return MODWIN_RESULT_INVALID_ARGUMENT;
 					}
@@ -606,7 +581,7 @@ namespace Modwin
 						return MODWIN_RESULT_INVALID_ARGUMENT;
 					}
 					applied = engine.m_RuntimeWorld.SetPosition(
-						command.entity, {command.value0, command.value1});
+						command.entity, { command.value0, command.value1 });
 					break;
 				default:
 					return MODWIN_RESULT_INVALID_ARGUMENT;
@@ -648,7 +623,8 @@ namespace Modwin
 				m_ActiveDocument->map.GetWidth(),
 				m_ActiveDocument->map.GetHeight(),
 				m_ActiveDocument->map.GetTileWidth(),
-				m_ActiveDocument->map.GetTileHeight()};
+				m_ActiveDocument->map.GetTileHeight()
+			};
 			HandleGameResult(
 				m_GameApi.enter_play(m_GameApi.game_context, &mapInfo),
 				"enter play mode");
@@ -661,5 +637,12 @@ namespace Modwin
 			m_RuntimeWorld.Clear();
 		}
 		m_PreviousEditorMode = m_EditorState.mode;
+	}
+
+	Camera2D& Engine::GetActiveCamera()
+	{
+		return m_EditorState.mode == EditorMode::Edit
+			       ? m_EditorState.camera
+			       : m_GameState.camera.GetCamera();
 	}
 }

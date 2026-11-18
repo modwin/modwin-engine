@@ -52,7 +52,16 @@ namespace Modwin
 		void BuildEngineApi() noexcept;
 		bool HandleGameResult(ModwinResult result, const char* operation);
 		void HandlePlayModeTransition();
+		Camera2D& GetActiveCamera();
+
+		void UpdatePlayMode(float frame_delta_seconds);
+
+		void UpdateEditMode(float frame_delta_seconds);
+
 		void Update(float frameDeltaSeconds);
+
+		void RenderEditorHighlights(float x, float y);
+
 		void Render();
 
 		static void MODWIN_ABI_CALL ApiLog(
