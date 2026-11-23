@@ -258,7 +258,7 @@ namespace Modwin
 			const float cameraX = std::floor(activeCamera.position.X);
 			const float cameraY = std::floor(activeCamera.position.Y);
 
-			m_ActiveDocument->map.Render(cameraX, cameraY);
+			m_ActiveDocument->map.RenderBackgroundLayers(cameraX, cameraY);
 
 			if (m_EditorState.mode == EditorMode::Edit)
 			{
@@ -268,6 +268,7 @@ namespace Modwin
 			{
 				m_RuntimeWorld.Render(activeCamera.position.X, activeCamera.position.Y);
 			}
+			m_ActiveDocument->map.RenderForeground(cameraX, cameraY);
 
 			SDL_SetRenderScale(m_Renderer, 1.0F, 1.0F);
 			SDL_SetRenderViewport(m_Renderer, nullptr);
@@ -609,7 +610,7 @@ namespace Modwin
 		}
 	}
 
-	ModwinResult Engine::ApiSetCameraZoom(void* context, float targetZoom)
+	ModwinResult MODWIN_ABI_CALL Engine::ApiSetCameraZoom(void* context, float targetZoom)
 	{
 		if (context == nullptr)
 		{
