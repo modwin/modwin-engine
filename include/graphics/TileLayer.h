@@ -48,6 +48,7 @@ namespace Modwin
 		[[nodiscard]] inline const std::vector<TileGid>& GetTiles() const noexcept {return m_Tiles;};
 		[[nodiscard]] inline bool ShouldRender() const noexcept {return m_ShouldRender;};
 		[[nodiscard]] inline bool IsCollisionLayer() const noexcept {return !m_ShouldRender;};
+		[[nodiscard]] inline bool IsObjectLayer() const noexcept {return !m_ShouldRender && m_Name == "objects";}
 
 		void Update();
 		void Render(const TilesetVec& tilesets, float cameraX = 0.0F, float cameraY = 0.0F) const;
@@ -57,6 +58,7 @@ namespace Modwin
 
 		std::string m_Name;
 		int m_TileWidth = 0;
+		int m_TileHeight = 0;
 		int m_Width = 0;
 		int m_Height = 0;
 		bool m_ShouldRender = false;
