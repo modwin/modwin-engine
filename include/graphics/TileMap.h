@@ -19,7 +19,21 @@ namespace Modwin
 			  m_TileHeight(tileHeight)
 		{
 		}
+		void RenderBackgroundLayers(const float cameraX = 0.0F, const float cameraY = 0.0F) const
+		{
+			for (int i = 0; i <=1; i++)
+			{
+				m_Layers[i].Render(m_Tilesets, cameraX, cameraY);
+			}
+		}
 
+		void RenderForeground(const float cameraX = 0.0F, const float cameraY = 0.0F) const
+		{
+			for (int i = 2; i == 2; i++)
+			{
+				m_Layers[i].Render(m_Tilesets, cameraX, cameraY);
+			}
+		}
 		void Render(const float cameraX = 0.0F, const float cameraY = 0.0F) const
 		{
 			for (const auto& layer : m_Layers)
@@ -59,6 +73,19 @@ namespace Modwin
 		[[nodiscard]] const std::vector<TileLayer>& GetLayers() const noexcept
 		{
 			return m_Layers;
+		}
+
+		[[nodiscard]] const TileLayer& GetObjectLayer() const noexcept
+		{
+			TileLayer l = m_Layers[0];
+			for (auto& layer : m_Layers)
+			{
+				if (layer.IsObjectLayer())
+				{
+					l = layer;
+				}
+			}
+			return l;
 		}
 
 		[[nodiscard]] int GetWidth() const noexcept { return m_Width; }
