@@ -75,17 +75,16 @@ namespace Modwin
 			return m_Layers;
 		}
 
-		[[nodiscard]] const TileLayer& GetObjectLayer() const noexcept
+		[[nodiscard]] const TileLayer* GetObjectLayer() const noexcept
 		{
-			TileLayer l = m_Layers[0];
 			for (auto& layer : m_Layers)
 			{
 				if (layer.IsObjectLayer())
 				{
-					l = layer;
+					return &layer;
 				}
 			}
-			return l;
+			return nullptr;
 		}
 
 		[[nodiscard]] int GetWidth() const noexcept { return m_Width; }
