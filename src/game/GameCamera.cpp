@@ -25,7 +25,7 @@ namespace Modwin
 
 				const float deadzoneLeft = m_DesiredPosition.X + (visW - deadzoneW) * 0.5F;
 				const float deadzoneRight = deadzoneLeft + deadzoneW;
-				const float deadzoneTop = m_DesiredPosition.Y + (visH - deadzoneH) * 0.5F;
+				const float deadzoneTop = m_DesiredPosition.Y + (visH - deadzoneH) * 0.4F;
 				const float deadzoneBottom = deadzoneTop + deadzoneH;
 
 				if (targetPos.X < deadzoneLeft)
