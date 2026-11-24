@@ -143,7 +143,8 @@ namespace Modwin
 			SDL_ClearAudioStream(allocStream);
 		}
 
-		SDL_SetAudioStreamGain(allocStream, volume);
+		const float finalVolume = std::clamp(volume * m_SfxVolume, 0.0F, 1.0F);
+		SDL_SetAudioStreamGain(allocStream, finalVolume);
 		SDL_SetAudioStreamFormat(allocStream, &clip.GetSpec(), nullptr);
 		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());
 	}
