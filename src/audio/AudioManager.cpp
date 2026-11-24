@@ -54,14 +54,14 @@ namespace Modwin
 		// Update music
 
 		// Update sound effects clips
-
 	}
 
 	/**
-	 *
-	 * @param path saves music track with @path if it isn't already saved to @m_MusicTrack and plays it.
+	 *	Saves music track with @path if it isn't already saved to @m_MusicTrack and plays it.
+	 *	@param path path of music track to be played.
+	 *	@param volume
 	 */
-	bool AudioManager::PlayMusic(std::string path, bool loop)
+	bool AudioManager::PlayMusic(const std::string& path, float volume,bool loop)
 	{
 		if (m_MusicPath == path)
 		{
@@ -83,5 +83,45 @@ namespace Modwin
 		return true;
 	}
 
+	void AudioManager::SetMusicVolume(float volume)
+	{
+	}
 
+	/**
+	 * Plays a SoundClip with the ID of @param soundId with volume @param volume
+	 * @param soundId plays sound effects clip with the ID of @soundId
+	 * @param volume float value 0.0 to 1.0 interpreted as a percentage.
+	 */
+	void AudioManager::PlaySfx(const std::string& soundId, float volume)
+	{
+		auto iter = m_SoundClips.find(soundId);
+		if (iter != m_SoundClips.end()) return;
+
+		const SoundClip& clip = iter->second;
+
+		SDL_AudioStream* allocStream = nullptr;
+		for (SDL_AudioStream* stream : m_SfxChannels)
+		{
+			// Iterates over streams until it finds an available one.
+			if (SDL_GetAudioStreamAvailable(stream))
+			{
+				allocStream = stream;
+				break;
+			}
+		}
+		// Forces allocation of a stream to the SoundClip if all are busy.
+		if (allocStream == nullptr)
+		{
+			allocStream = m_SfxChannels[m_NextChannelIndex];
+			m_NextChannelIndex = (m_NextChannelIndex + 1) % MaxSfxChannels;
+			SDL_ClearAudioStream(allocStream);
+		}
+
+		SDL_SetAudioStreamGain(allocStream, volume);
+		SDL_SetAudioStreamFormat(allocStream, &clip.GetSpec(), nullptr);
+		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());	}
+
+	void AudioManager::SetSfxVolume(float volume)
+	{
+	}
 }
