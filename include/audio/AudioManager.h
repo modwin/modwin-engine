@@ -17,7 +17,7 @@ namespace Modwin
 
 			bool Init();
 			void Update();
-			void ShutDown();
+			void Shutdown();
 
 			void PlayMusic(std::string path);
 			void StopMusic();
@@ -29,6 +29,7 @@ namespace Modwin
 		private:
 			static constexpr std::size_t MaxSfxChannels = 16;
 
+			SDL_AudioDeviceID m_DeviceId = 0;
 			SDL_AudioStream* m_MusicStream;
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
 
