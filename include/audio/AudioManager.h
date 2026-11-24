@@ -1,7 +1,11 @@
 #ifndef MODWIN_ENGINE_AUDIOMANAGER_H
 #define MODWIN_ENGINE_AUDIOMANAGER_H
 #include <string>
+#include <array>
+#include <unordered_map>
 #include <SDL3/SDL_audio.h>
+
+#include "SoundClip.h"
 
 namespace Modwin
 {
@@ -20,8 +24,12 @@ namespace Modwin
 			void PlaySound(std::string path);
 
 		private:
+			static constexpr std::size_t MaxSfxChannels = 16;
+
 			SDL_AudioStream* m_MusicStream;
-			SDL_AudioStream* m_SoundStream;
+			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
+
+			std::unordered_map<std::string, SoundClip> m_SoundClips{};
 	};
 }
 
