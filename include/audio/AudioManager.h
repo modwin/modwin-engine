@@ -20,7 +20,6 @@ namespace Modwin
 			void Shutdown();
 
 			bool PlayMusic(std::string path, bool loop = true);
-			void StopMusic();
 			void SetMusicVolume(float volume);
 
 			void PlaySfx(std::string path);
