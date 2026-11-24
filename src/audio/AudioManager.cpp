@@ -148,5 +148,13 @@ namespace Modwin
 
 	bool AudioManager::LoadSfx(const std::string& soundId, const std::filesystem::path& path)
 	{
+		SoundClip clip(path);
+		if (!clip.IsValid())
+		{
+			Log::GetCoreLogger()->error("Sound effect '{}' not found in sound path {}.", soundId, path.string());
+			return false;
+		}
+		m_SoundClips.emplace(soundId, std::move(clip));
+		return clip.IsValid();
 	}
 }
