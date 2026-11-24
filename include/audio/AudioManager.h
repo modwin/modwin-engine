@@ -19,7 +19,7 @@ namespace Modwin
 			void Update();
 			void Shutdown();
 
-			void PlayMusic(std::string path);
+			bool PlayMusic(std::string path, bool loop = true);
 			void StopMusic();
 			void SetMusicVolume(float volume);
 
@@ -30,13 +30,15 @@ namespace Modwin
 			static constexpr std::size_t MaxSfxChannels = 16;
 
 			SDL_AudioDeviceID m_DeviceId = 0;
-			SDL_AudioStream* m_MusicStream;
 
+			SDL_AudioStream* m_MusicStream;
+			std::string m_MusicPath;
+
+			std::unique_ptr<SoundClip> m_MusicTrack;
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
 			std::size_t m_NextChannelIndex = 0; // Next channel index that is free
 
 			std::unordered_map<std::string, SoundClip> m_SoundClips{};
-			std::unique_ptr<SoundClip> m_MusicTrack;
 	};
 }
 
