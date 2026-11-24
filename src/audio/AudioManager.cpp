@@ -123,7 +123,7 @@ namespace Modwin
 		for (SDL_AudioStream* stream : m_SfxChannels)
 		{
 			// Iterates over streams until it finds an available one.
-			if (SDL_GetAudioStreamAvailable(stream))
+			if (SDL_GetAudioStreamAvailable(stream) == 0)
 			{
 				allocStream = stream;
 				break;
