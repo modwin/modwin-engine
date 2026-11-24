@@ -57,12 +57,6 @@ namespace Modwin
 			PlayMusic(m_MusicPath);
 		}
 
-		// Update sound effects clips
-		auto iter = m_SoundClips.begin();
-		while (iter != m_SoundClips.end())
-		{
-			PlaySfx(iter->first, m_SfxVolume);
-		}
 	}
 
 	/**
