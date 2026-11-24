@@ -22,4 +22,31 @@ namespace Modwin
 		SDL_ResumeAudioDevice(m_DeviceId);
 		return true;
 	}
+
+	void AudioManager::Shutdown()
+	{
+		if (m_MusicStream)
+		{
+			SDL_DestroyAudioStream(m_MusicStream);
+			m_MusicStream = nullptr;
+		}
+
+		for (SDL_AudioStream*& stream: m_SfxChannels)
+		{
+			if (stream)
+			{
+				SDL_DestroyAudioStream(stream);
+				stream = nullptr;
+			}
+		}
+
+		m_MusicTrack.reset();
+		m_SoundClips.clear();
+
+		if (m_DeviceId != 0)
+		{
+			SDL_CloseAudioDevice(m_DeviceId);
+			m_DeviceId = 0;
+		}
+	}
 }
