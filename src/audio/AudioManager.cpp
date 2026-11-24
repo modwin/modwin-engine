@@ -35,7 +35,7 @@ namespace Modwin
 			m_MusicStream = nullptr;
 		}
 
-		for (SDL_AudioStream*& stream : m_SfxChannels)
+		for (SDL_AudioStream*& stream: m_SfxChannels)
 		{
 			if (stream)
 			{
@@ -57,18 +57,14 @@ namespace Modwin
 
 	void AudioManager::Update()
 	{
-
-		// Update music if there is a path saved.
-		if (m_LoopMusic && m_MusicTrack && m_MusicTrack->IsValid() && m_MusicStream)
+		// When SDL_GetAudioStreamAvailable returns low buffer, the SDLAudioStream for music is reassigned.
+		if (m_LoopMusic && m_MusicTrack && m_MusicStream)
 		{
-
+			if (SDL_GetAudioStreamAvailable(m_MusicStream) < static_cast<int>(m_MusicTrack->GetLength() / 2))
+			{
+				SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+			}
 		}
-		if (SDL_GetAudioStreamAvailable(m_MusicStream) < static_cast<int>(m_MusicTrack->GetLength() / 2))
-		{
-			SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
-			return;
-		}
-		Log::GetCoreLogger()->error("Error updating music playback %s", SDL_GetError());
 	}
 
 	/**
@@ -76,7 +72,7 @@ namespace Modwin
 	 *	@param path path of music track to be played.
 	 *	@param loop
 	 */
-	bool AudioManager::PlayMusic(const std::string& path,bool loop)
+	bool AudioManager::PlayMusic(const std::string& path, bool loop)
 	{
 		if (m_MusicPath == path)
 		{
@@ -126,7 +122,7 @@ namespace Modwin
 		const SoundClip& clip = iter->second;
 
 		SDL_AudioStream* allocStream = nullptr;
-		for (SDL_AudioStream* stream : m_SfxChannels)
+		for (SDL_AudioStream* stream: m_SfxChannels)
 		{
 			// Iterates over streams until it finds an available one.
 			if (SDL_GetAudioStreamAvailable(stream) == 0)
@@ -145,7 +141,8 @@ namespace Modwin
 
 		SDL_SetAudioStreamGain(allocStream, volume);
 		SDL_SetAudioStreamFormat(allocStream, &clip.GetSpec(), nullptr);
-		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());	}
+		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());
+	}
 
 	void AudioManager::SetSfxVolume(float volume)
 	{
