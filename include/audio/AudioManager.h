@@ -21,7 +21,10 @@ namespace Modwin
 
 			void PlayMusic(std::string path);
 			void StopMusic();
-			void PlaySound(std::string path);
+			void SetMusicVolume(float volume);
+
+			void PlaySfx(std::string path);
+			void SetSfxVolume(float volume);
 
 		private:
 			static constexpr std::size_t MaxSfxChannels = 16;
@@ -30,6 +33,7 @@ namespace Modwin
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
 
 			std::unordered_map<std::string, SoundClip> m_SoundClips{};
+			std::unique_ptr<SoundClip> m_MusicTrack;
 	};
 }
 
