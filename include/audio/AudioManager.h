@@ -22,7 +22,7 @@ namespace Modwin
 			bool PlayMusic(const std::string& path, bool loop = true);
 			void SetMusicVolume(float volume);
 
-			void PlaySfx(const std::string& soundId, float volume);
+			void PlaySfx(const std::string& soundId, float volume = 1.0);
 			void SetSfxVolume(float volume);
 
 		private:
@@ -34,6 +34,7 @@ namespace Modwin
 			std::string m_MusicPath;
 			std::unique_ptr<SoundClip> m_MusicTrack;
 
+			float m_SfxVolume = 1;
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
 			std::size_t m_NextChannelIndex = 0; // Next channel index that is free
 
