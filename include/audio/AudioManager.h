@@ -12,28 +12,28 @@ namespace Modwin
 	class AudioManager
 	{
 		public:
-			AudioManager();
-			~AudioManager();
+			AudioManager() = default;
+			~AudioManager() = default;;
 
 			bool Init();
 			void Update();
 			void Shutdown();
 
-			bool PlayMusic(std::string path, bool loop = true);
+			bool PlayMusic(const std::string& path, bool loop = true);
 			void SetMusicVolume(float volume);
 
-			void PlaySfx(std::string path);
+			void PlaySfx(const std::string& soundId, float volume);
 			void SetSfxVolume(float volume);
 
 		private:
+			SDL_AudioDeviceID m_DeviceId = 0;
 			static constexpr std::size_t MaxSfxChannels = 16;
 
-			SDL_AudioDeviceID m_DeviceId = 0;
-
-			SDL_AudioStream* m_MusicStream;
+			float m_MusicVolume = 1;
+			SDL_AudioStream* m_MusicStream = nullptr;
 			std::string m_MusicPath;
-
 			std::unique_ptr<SoundClip> m_MusicTrack;
+
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
 			std::size_t m_NextChannelIndex = 0; // Next channel index that is free
 

@@ -59,9 +59,9 @@ namespace Modwin
 	/**
 	 *	Saves music track with @path if it isn't already saved to @m_MusicTrack and plays it.
 	 *	@param path path of music track to be played.
-	 *	@param volume
+	 *	@param loop
 	 */
-	bool AudioManager::PlayMusic(const std::string& path, float volume,bool loop)
+	bool AudioManager::PlayMusic(const std::string& path,bool loop)
 	{
 		if (m_MusicPath == path)
 		{
@@ -78,13 +78,20 @@ namespace Modwin
 		}
 
 		SDL_ClearAudioStream(m_MusicStream);
+		SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume);
 		SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr);
 		SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
 		return true;
 	}
 
+	/**
+	 * Sets music volume of the music track.
+	 *
+	 * @param volume float value from 0.0 to 1.0
+	 */
 	void AudioManager::SetMusicVolume(float volume)
 	{
+		m_MusicVolume = volume;
 	}
 
 	/**
