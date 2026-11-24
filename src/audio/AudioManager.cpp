@@ -102,7 +102,11 @@ namespace Modwin
 	 */
 	void AudioManager::SetMusicVolume(float volume)
 	{
-		m_MusicVolume = volume;
+		m_MusicVolume = std::clamp(volume, 0.0F, 1.0F);
+		if (m_MusicStream)
+		{
+			SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume);
+		}
 	}
 
 	/**
