@@ -15,9 +15,9 @@ namespace Modwin
 	class MusicPlayer
 	{
 		public:
-			static void LoadMusic();
+			void LoadMusic();
 
-			static void Init();
+			void Init();
 
 		private:
 			SDL_AudioStream* m_AudioStream = nullptr;
