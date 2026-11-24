@@ -148,10 +148,10 @@ namespace Modwin
 		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());
 	}
 
-	void AudioManager::SetSfxVolume(float volume)
-	{
-		m_SfxVolume = volume;
-	}
+    void AudioManager::SetSfxVolume(float volume)
+    {
+        m_SfxVolume = std::clamp(volume, 0.0F, 1.0F);
+    }
 
 	bool AudioManager::LoadSfx(const std::string& soundId, const std::filesystem::path& path)
 	{
