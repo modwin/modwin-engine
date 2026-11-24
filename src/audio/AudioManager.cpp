@@ -8,7 +8,11 @@ namespace Modwin
 	bool AudioManager::Init()
 	{
 		m_DeviceId = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-		if (m_DeviceId == 0) return false;
+		if (m_DeviceId == 0)
+		{
+			Log::GetCoreLogger()->error("Failed to open audio device: {}", SDL_GetError());
+			return false;
+		}
 
 		m_MusicStream = SDL_CreateAudioStream(nullptr, nullptr);
 		SDL_BindAudioStream(m_DeviceId, m_MusicStream);
