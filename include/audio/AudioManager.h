@@ -24,11 +24,13 @@ namespace Modwin
 
 			void PlaySfx(const std::string& soundId, float volume = 1.0);
 			void SetSfxVolume(float volume);
+			bool LoadSfx(const std::string& soundId, const std::filesystem::path& path);
 
 		private:
 			SDL_AudioDeviceID m_DeviceId = 0;
 			static constexpr std::size_t MaxSfxChannels = 16;
 
+			bool m_LoopMusic = true;
 			float m_MusicVolume = 1;
 			SDL_AudioStream* m_MusicStream = nullptr;
 			std::string m_MusicPath;

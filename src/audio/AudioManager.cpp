@@ -145,4 +145,8 @@ namespace Modwin
 	{
 		m_SfxVolume = volume;
 	}
+
+	bool AudioManager::LoadSfx(const std::string& soundId, const std::filesystem::path& path)
+	{
+	}
 }
