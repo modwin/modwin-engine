@@ -31,7 +31,9 @@ namespace Modwin
 
 			SDL_AudioDeviceID m_DeviceId = 0;
 			SDL_AudioStream* m_MusicStream;
+
 			std::array<SDL_AudioStream*, MaxSfxChannels> m_SfxChannels{};
+			std::size_t m_NextChannelIndex = 0; // Next channel index that is free
 
 			std::unordered_map<std::string, SoundClip> m_SoundClips{};
 			std::unique_ptr<SoundClip> m_MusicTrack;

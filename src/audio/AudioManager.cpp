@@ -40,7 +40,6 @@ namespace Modwin
 			}
 		}
 
-		m_MusicTrack.reset();
 		m_SoundClips.clear();
 
 		if (m_DeviceId != 0)
@@ -49,4 +48,40 @@ namespace Modwin
 			m_DeviceId = 0;
 		}
 	}
+
+	void AudioManager::Update()
+	{
+		// Update music
+
+		// Update sound effects clips
+
+	}
+
+	/**
+	 *
+	 * @param path saves music track with @path if it isn't already saved to @m_MusicTrack and plays it.
+	 */
+	bool AudioManager::PlayMusic(std::string path, bool loop)
+	{
+		if (m_MusicPath == path)
+		{
+			return true;
+		}
+
+		m_MusicPath = path;
+		m_MusicTrack = std::make_unique<SoundClip>(path);
+
+		if (!m_MusicTrack->IsValid())
+		{
+			m_MusicTrack.reset();
+			return false;
+		}
+
+		SDL_ClearAudioStream(m_MusicStream);
+		SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr);
+		SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+		return true;
+	}
+
+
 }
