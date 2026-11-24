@@ -105,7 +105,11 @@ namespace Modwin
 	void AudioManager::PlaySfx(const std::string& soundId, float volume)
 	{
 		const auto iter = m_SoundClips.find(soundId);
-		if (iter != m_SoundClips.end()) return;
+		if (iter == m_SoundClips.end())
+		{
+			Log::GetCoreLogger()->warn("Sound effect '{}' not found in sound bank.", soundId);
+			return;
+		}
 
 		const SoundClip& clip = iter->second;
 
