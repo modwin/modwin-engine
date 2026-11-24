@@ -51,9 +51,18 @@ namespace Modwin
 
 	void AudioManager::Update()
 	{
-		// Update music
+		// Update music if there is a path saved.
+		if (!m_MusicPath.empty())
+		{
+			PlayMusic(m_MusicPath);
+		}
 
 		// Update sound effects clips
+		auto iter = m_SoundClips.begin();
+		while (iter != m_SoundClips.end())
+		{
+			PlaySfx(iter->first, m_SfxVolume);
+		}
 	}
 
 	/**
@@ -101,7 +110,7 @@ namespace Modwin
 	 */
 	void AudioManager::PlaySfx(const std::string& soundId, float volume)
 	{
-		auto iter = m_SoundClips.find(soundId);
+		const auto iter = m_SoundClips.find(soundId);
 		if (iter != m_SoundClips.end()) return;
 
 		const SoundClip& clip = iter->second;
@@ -130,5 +139,6 @@ namespace Modwin
 
 	void AudioManager::SetSfxVolume(float volume)
 	{
+		m_SfxVolume = volume;
 	}
 }
