@@ -51,12 +51,18 @@ namespace Modwin
 
 	void AudioManager::Update()
 	{
-		// Update music if there is a path saved.
-		if (!m_MusicPath.empty())
-		{
-			PlayMusic(m_MusicPath);
-		}
 
+		// Update music if there is a path saved.
+		if (m_LoopMusic && m_MusicTrack && m_MusicTrack->IsValid() && m_MusicStream)
+		{
+
+		}
+		if (SDL_GetAudioStreamAvailable(m_MusicStream) < static_cast<int>(m_MusicTrack->GetLength() / 2))
+		{
+			SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+			return;
+		}
+		Log::GetCoreLogger()->error("Error updating music playback %s", SDL_GetError());
 	}
 
 	/**
