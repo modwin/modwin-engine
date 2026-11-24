@@ -35,7 +35,7 @@ namespace Modwin
 			m_MusicStream = nullptr;
 		}
 
-		for (SDL_AudioStream*& stream: m_SfxChannels)
+		for (SDL_AudioStream*& stream : m_SfxChannels)
 		{
 			if (stream)
 			{
@@ -45,6 +45,8 @@ namespace Modwin
 		}
 
 		m_SoundClips.clear();
+		m_MusicTrack.reset();
+		m_MusicPath.clear();
 
 		if (m_DeviceId != 0)
 		{
