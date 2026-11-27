@@ -12,6 +12,7 @@
 
 #include <optional>
 
+#include "audio/AudioManager.h"
 #include "game/GameState.h"
 
 struct SDL_Renderer;
@@ -107,6 +108,7 @@ namespace Modwin
 			static ModwinResult ApiSetCameraTarget(void* context, ModwinEntityHandle entity) noexcept;
 			static ModwinResult ApiSetCameraZoom(void* context, float targetZoom);
 
+			AudioManager m_AudioManager;
 			ModwinGameApi m_GameApi{};
 			ModwinEngineApi m_EngineApi{};
 			RuntimeWorld m_RuntimeWorld;
