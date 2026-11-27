@@ -104,6 +104,8 @@ namespace Modwin
 				void* context,
 				const ModwinEntityCommand* commands,
 				uint32_t commandCount) noexcept;
+			static ModwinResult MODWIN_ABI_CALL ApiPlayMusic(void* engine_context, const char* sound_id);
+
 
 			static ModwinResult ApiSetCameraTarget(void* context, ModwinEntityHandle entity) noexcept;
 			static ModwinResult ApiSetCameraZoom(void* context, float targetZoom);

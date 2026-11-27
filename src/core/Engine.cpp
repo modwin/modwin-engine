@@ -390,6 +390,7 @@ namespace Modwin
 		m_EngineApi.submit_entity_commands = &Engine::ApiSubmitEntityCommands;
 		m_EngineApi.set_camera_target = &Engine::ApiSetCameraTarget;
 		m_EngineApi.set_camera_zoom = &Engine::ApiSetCameraZoom;
+		m_EngineApi.play_music = &Engine::ApiPlayMusic;
 	}
 
 	bool Engine::HandleGameResult(const ModwinResult result, const char* operation)
@@ -632,6 +633,17 @@ namespace Modwin
 		}
 		auto* engine = static_cast<Engine*>(context);
 		engine->m_GameState.camera.SetFollowTarget(entity);
+		return MODWIN_RESULT_OK;
+	}
+
+	ModwinResult Engine::ApiPlayMusic(void* engine_context, const char* sound_id)
+	{
+		if (engine_context == nullptr)
+		{
+			return MODWIN_RESULT_INVALID_ARGUMENT;
+		}
+		auto* engine = static_cast<Engine*>(engine_context);
+		engine->m_AudioManager.PlayMusic(sound_id);
 		return MODWIN_RESULT_OK;
 	}
 

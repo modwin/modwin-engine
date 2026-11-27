@@ -78,6 +78,14 @@ typedef struct ModwinVec2
 	float y;
 } ModwinVec2;
 
+typedef struct ModwinMapObject
+{
+	const char* name;
+	const char* type;
+	ModwinVec2 position;
+	ModwinVec2 size;
+} ModwinMapObject;
+
 typedef struct ModwinMapInfo
 {
 	uint32_t struct_size;
@@ -152,7 +160,11 @@ typedef struct ModwinEngineApi
 	ModwinResult (MODWIN_ABI_CALL *set_camera_target)(
 		void* engine_context, ModwinEntityHandle entity);
 	ModwinResult (MODWIN_ABI_CALL *set_camera_zoom)(
-		void* engine_context, ModwinEntityHandle entity);
+		void* engine_context, float targetZoom);
+	ModwinResult (MODWIN_ABI_CALL *play_sfx)(
+		void* engine_context, const char* soundId, float volume);
+	ModwinResult (MODWIN_ABI_CALL *play_music)(
+		void* engine_context, const char* soundId);
 } ModwinEngineApi;
 
 typedef struct ModwinGameApi

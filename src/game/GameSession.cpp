@@ -82,6 +82,7 @@ namespace Modwin
 		createInfo.collision_offset = {20.0F, 44.0F};
 		createInfo.collision_size = {24.0F, 24.0F};
 		m_Player = m_Engine->create_entity(m_Engine->engine_context, &createInfo);
+
 		if (m_Engine->set_camera_target != nullptr)
 		{
 			m_Engine->set_camera_target(m_Engine->engine_context, m_Player);
@@ -190,7 +191,7 @@ namespace Modwin
 		commands[1].data2 = moving ? 80U : 250U;
 
 		const ModwinResult result = m_Engine->submit_entity_commands(
-			m_Engine->engine_context, commands, 3U);
+			m_Engine->engine_context, commands, 2U);
 		if (result == MODWIN_RESULT_OK)
 		{
 			m_PendingInput.attackPressed = false;
