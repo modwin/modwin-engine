@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "MapObject.h"
+
 namespace Modwin
 {
 	class TileMap
@@ -99,6 +101,7 @@ namespace Modwin
 		int m_TileHeight = 0;
 		TilesetVec m_Tilesets;
 		std::vector<TileLayer> m_Layers;
+		std::vector<MapObject> m_MapObjects;
 	};
 }
 
