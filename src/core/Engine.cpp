@@ -44,7 +44,7 @@ namespace Modwin
 			                   ? CreateDefaultProjectContext()
 			                   : std::move(projectContext);
 
-		if (!SDL_Init(SDL_INIT_VIDEO))
+		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
 		{
 			Log::GetCoreLogger()->error("Failed to initialize SDL: {}", SDL_GetError());
 			return false;
@@ -67,6 +67,7 @@ namespace Modwin
 		}
 		TextureManager::GetInstance()->SetRenderer(m_Renderer);
 		m_AudioManager.Init();
+		m_AudioManager.LoadMusic(m_ProjectContext.musicPath.string());
 
 		SDL_SetRenderVSync(m_Renderer, 1);
 
@@ -190,6 +191,7 @@ namespace Modwin
 			UpdateEditMode(frameDeltaSeconds);
 		}
 		m_AudioManager.Update();
+		m_AudioManager.PlayMusic(m_ProjectContext.musicPath.string());
 	}
 
 	void Engine::RenderEditorHighlights(float x, float y)
