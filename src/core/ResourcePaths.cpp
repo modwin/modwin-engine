@@ -23,7 +23,7 @@ namespace Modwin
 		context.assetRoot = GetResourcePath({}).lexically_normal();
 		context.projectRoot = context.assetRoot.parent_path();
 
-		context.mapPath = context.assetRoot / "map";
+		context.mapPath = context.assetRoot / "maps";
 		context.spritePath = context.assetRoot / "sprite";
 		context.npcPath = context.spritePath / "npc";
 
