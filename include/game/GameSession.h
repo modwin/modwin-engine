@@ -1,8 +1,13 @@
 #ifndef MODWIN_GAME_GAMESESSION_H
 #define MODWIN_GAME_GAMESESSION_H
 
+#include <memory>
+
 #include "game/InputBindings.h"
 #include "modwin/abi/ModwinGameApi.h"
+#include <vector>
+
+#include "Sprite.h"
 
 namespace Modwin
 {
@@ -48,6 +53,7 @@ namespace Modwin
 		PlayerInput m_PendingInput{};
 		float m_FacingX = 0.0F;
 		float m_FacingY = 1.0F;
+		std::vector<std::unique_ptr<Sprite>> m_Sprites;
 	};
 }
 
