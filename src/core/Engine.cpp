@@ -66,6 +66,7 @@ namespace Modwin
 			return false;
 		}
 		TextureManager::GetInstance()->SetRenderer(m_Renderer);
+		m_AudioManager.Init();
 
 		SDL_SetRenderVSync(m_Renderer, 1);
 
@@ -188,6 +189,7 @@ namespace Modwin
 		{
 			UpdateEditMode(frameDeltaSeconds);
 		}
+		m_AudioManager.Update();
 	}
 
 	void Engine::RenderEditorHighlights(float x, float y)
