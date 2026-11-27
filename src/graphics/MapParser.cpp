@@ -264,8 +264,8 @@ namespace Modwin
 		return TileLayer(name, width, height, mapTileWidth, shouldRender, std::move(tiles));
 	}
 
-	std::optional<MapObject> MapParser::ParseMapObjects(const tinyxml2::XMLElement* layerElement)
+	std::optional<MapObject> MapParser::ParseMapObjects(const tinyxml2::XMLElement* layerElement, TileMap& tileMap)
 	{
-
+		
 	}
 }
