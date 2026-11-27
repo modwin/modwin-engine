@@ -74,10 +74,10 @@ namespace Modwin
 		int mapTileWidth = 0;
 		int mapTileHeight = 0;
 		if (rootElement->QueryIntAttribute("width", &mapWidth) != tinyxml2::XML_SUCCESS ||
-			rootElement->QueryIntAttribute("height", &mapHeight) != tinyxml2::XML_SUCCESS ||
-			rootElement->QueryIntAttribute("tilewidth", &mapTileWidth) != tinyxml2::XML_SUCCESS ||
-			rootElement->QueryIntAttribute("tileheight", &mapTileHeight) != tinyxml2::XML_SUCCESS ||
-			mapWidth <= 0 || mapHeight <= 0 || mapTileWidth <= 0 || mapTileHeight <= 0)
+		    rootElement->QueryIntAttribute("height", &mapHeight) != tinyxml2::XML_SUCCESS ||
+		    rootElement->QueryIntAttribute("tilewidth", &mapTileWidth) != tinyxml2::XML_SUCCESS ||
+		    rootElement->QueryIntAttribute("tileheight", &mapTileHeight) != tinyxml2::XML_SUCCESS ||
+		    mapWidth <= 0 || mapHeight <= 0 || mapTileWidth <= 0 || mapTileHeight <= 0)
 		{
 			Log::GetCoreLogger()->error("Map '{}' has invalid dimensions.", source.string());
 			return std::nullopt;
@@ -87,8 +87,8 @@ namespace Modwin
 		TileMap tileMap(mapWidth, mapHeight, mapTileWidth, mapTileHeight);
 
 		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("tileset");
-			element != nullptr;
-			element = element->NextSiblingElement("tileset"))
+		     element != nullptr;
+		     element = element->NextSiblingElement("tileset"))
 		{
 			auto tileset = ParseTileSet(element);
 			if (!tileset.has_value())
@@ -100,8 +100,8 @@ namespace Modwin
 		}
 
 		for (const tinyxml2::XMLElement* element = rootElement->FirstChildElement("layer");
-			element != nullptr;
-			element = element->NextSiblingElement("layer"))
+		     element != nullptr;
+		     element = element->NextSiblingElement("layer"))
 		{
 			auto layer = ParseTileLayer(element, mapTileWidth);
 			if (!layer.has_value())
@@ -110,6 +110,16 @@ namespace Modwin
 			}
 
 			tileMap.AddLayer(std::move(*layer));
+		}
+		const tinyxml2::XMLElement* groupElem = rootElement->FirstChildElement("group");
+		if (groupElem != nullptr)
+		{
+			for (const auto* objElem = groupElem->FirstChildElement("object");
+			     objElem != nullptr;
+			     objElem = objElem->NextSiblingElement("object"))
+			{
+				ParseMapObjects(objElem,tileMap);
+			}
 		}
 
 		if (tileMap.GetLayers().empty())
@@ -140,16 +150,16 @@ namespace Modwin
 		int tileHeight = 0;
 
 		const bool validMap =
-			name != nullptr &&
-			imageSource != nullptr;
+				name != nullptr &&
+				imageSource != nullptr;
 
 		const bool validXml =
-			tilesetElement->QueryUnsignedAttribute("firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
-			tilesetElement->QueryIntAttribute("tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
-			tilesetElement->QueryIntAttribute("columns", &columnCount) == tinyxml2::XML_SUCCESS &&
-			tilesetElement->QueryIntAttribute("tilewidth", &tileWidth) == tinyxml2::XML_SUCCESS &&
-			tilesetElement->QueryIntAttribute("tileheight", &tileHeight) == tinyxml2::XML_SUCCESS &&
-			tileCount > 0 && columnCount > 0 && tileWidth > 0 && tileHeight > 0;
+				tilesetElement->QueryUnsignedAttribute("firstgid", &firstId) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute("tilecount", &tileCount) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute("columns", &columnCount) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute("tilewidth", &tileWidth) == tinyxml2::XML_SUCCESS &&
+				tilesetElement->QueryIntAttribute("tileheight", &tileHeight) == tinyxml2::XML_SUCCESS &&
+				tileCount > 0 && columnCount > 0 && tileWidth > 0 && tileHeight > 0;
 
 		if (!validMap)
 		{
@@ -189,9 +199,9 @@ namespace Modwin
 		int width = 0;
 		int height = 0;
 		if (name == nullptr ||
-			layerElement->QueryIntAttribute("width", &width) != tinyxml2::XML_SUCCESS ||
-			layerElement->QueryIntAttribute("height", &height) != tinyxml2::XML_SUCCESS ||
-			width <= 0 || height <= 0)
+		    layerElement->QueryIntAttribute("width", &width) != tinyxml2::XML_SUCCESS ||
+		    layerElement->QueryIntAttribute("height", &height) != tinyxml2::XML_SUCCESS ||
+		    width <= 0 || height <= 0)
 		{
 			Log::GetCoreLogger()->error("Map contains an invalid tile-layer definition.");
 			return std::nullopt;
@@ -238,7 +248,7 @@ namespace Modwin
 				std::size_t parsedCharacters = 0;
 				const unsigned long long value = std::stoull(token, &parsedCharacters);
 				if (token.find_first_not_of(" \t\r\n", parsedCharacters) != std::string::npos ||
-					value > std::numeric_limits<TileGid>::max())
+				    value > std::numeric_limits<TileGid>::max())
 				{
 					throw std::out_of_range("Invalid tile GID");
 				}
@@ -264,8 +274,23 @@ namespace Modwin
 		return TileLayer(name, width, height, mapTileWidth, shouldRender, std::move(tiles));
 	}
 
-	std::optional<MapObject> MapParser::ParseMapObjects(const tinyxml2::XMLElement* layerElement, TileMap& tileMap)
+	void MapParser::ParseMapObject(const tinyxml2::XMLElement* objElem, TileMap& tileMap)
 	{
-		
+		MapObject obj;
+		obj.name = objElem->Attribute("name") ? objElem->Attribute("name") : "";
+		obj.type = objElem->Attribute("type") ? objElem->Attribute("type") : "";
+		objElem->QueryFloatAttribute("x", &obj.position.X);
+		objElem->QueryFloatAttribute("y", &obj.position.Y);
+		objElem->QueryFloatAttribute("width", &obj.size.X);
+		objElem->QueryFloatAttribute("height", &obj.size.Y);
+
+		if (const auto* props = objElem->FirstChildElement("properties"))
+		{
+			for (const auto* p = props->FirstChildElement("property"); p; p = p->NextSiblingElement("property"))
+			{
+				obj.properties[p->Attribute("name")] = p->Attribute("value");
+			}
+		}
+		tileMap.AddObject(obj);
 	}
 }

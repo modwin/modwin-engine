@@ -31,7 +31,7 @@ namespace Modwin
 		static std::optional<TileLayer> ParseTileLayer(
 			const tinyxml2::XMLElement* layerElement, int mapTileWidth);
 
-		static std::optional<MapObject> ParseMapObjects(const tinyxml2::XMLElement* layerElement, TileMap& tileMap);
+		static void ParseMapObject(const tinyxml2::XMLElement* objElem, TileMap& tileMap);
 
 	private:
 		MapParser() = default;
