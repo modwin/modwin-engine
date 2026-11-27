@@ -23,6 +23,8 @@ namespace Modwin
 		context.assetRoot = GetResourcePath({}).lexically_normal();
 		context.projectRoot = context.assetRoot.parent_path();
 		context.activeMapPath = context.assetRoot / "maps" / "map.tmx";
+		context.musicPath = context.assetRoot / "audio" / "music.tmx";
+		context.soundEffectsPath = context.assetRoot / "audio" / "effects";
 		return context;
 	}
 

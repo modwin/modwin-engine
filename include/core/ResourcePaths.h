@@ -9,6 +9,8 @@ namespace Modwin
 		std::filesystem::path projectRoot;
 		std::filesystem::path assetRoot;
 		std::filesystem::path activeMapPath;
+		std::filesystem::path soundEffectsPath;
+		std::filesystem::path musicPath;
 	};
 
 	[[nodiscard]] std::filesystem::path GetResourcePath(const std::filesystem::path& relativePath);
