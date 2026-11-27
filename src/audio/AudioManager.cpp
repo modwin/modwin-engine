@@ -111,7 +111,7 @@ namespace Modwin
 
 	/**
 	 * Plays a SoundClip with the ID of @param soundId with volume @param volume
-	 * @param soundId plays sound effects clip with the ID of @soundId
+	 * @param soundId plays audio effects clip with the ID of @soundId
 	 * @param volume float value 0.0 to 1.0 interpreted as a percentage.
 	 */
 	void AudioManager::PlaySfx(const std::string& soundId, float volume)
@@ -119,7 +119,7 @@ namespace Modwin
 		const auto iter = m_SoundClips.find(soundId);
 		if (iter == m_SoundClips.end())
 		{
-			Log::GetCoreLogger()->warn("Sound effect '{}' not found in sound bank.", soundId);
+			Log::GetCoreLogger()->warn("Sound effect '{}' not found in audio bank.", soundId);
 			return;
 		}
 
@@ -159,7 +159,7 @@ namespace Modwin
 		SoundClip clip(path);
 		if (!clip.IsValid())
 		{
-			Log::GetCoreLogger()->error("Sound effect '{}' not found in sound path {}.", soundId, path.string());
+			Log::GetCoreLogger()->error("Sound effect '{}' not found in audio path {}.", soundId, path.string());
 			return false;
 		}
 		m_SoundClips.emplace(soundId, std::move(clip));
