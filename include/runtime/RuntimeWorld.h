@@ -38,7 +38,7 @@ namespace Modwin
 
 		void FixedUpdate(float deltaSeconds, CollisionWorld& collisionWorld) noexcept;
 		void Update(float deltaSeconds) noexcept;
-		void Render();
+		void Render(float cameraX, float cameraY);
 		void Clear() noexcept;
 
 		[[nodiscard]] std::size_t GetEntityCount() const noexcept { return m_LiveEntityCount; }
