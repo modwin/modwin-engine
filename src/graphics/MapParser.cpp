@@ -13,6 +13,8 @@
 #include <utility>
 #include <vector>
 
+#include "graphics/MapObject.h"
+
 namespace Modwin
 {
 	MapParser* MapParser::GetInstance()
@@ -260,5 +262,10 @@ namespace Modwin
 		}
 
 		return TileLayer(name, width, height, mapTileWidth, shouldRender, std::move(tiles));
+	}
+
+	std::optional<MapObject> MapParser::ParseMapObjects(const tinyxml2::XMLElement* layerElement)
+	{
+
 	}
 }

@@ -7,8 +7,11 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <optional>
 #include <string>
 #include <tinyxml2.h>
+
+#include "MapObject.h"
 
 namespace Modwin
 {
@@ -27,6 +30,8 @@ namespace Modwin
 		static std::optional<Tileset> ParseTileSet(const tinyxml2::XMLElement* tilesetElement);
 		static std::optional<TileLayer> ParseTileLayer(
 			const tinyxml2::XMLElement* layerElement, int mapTileWidth);
+
+		static std::optional<MapObject> ParseMapObjects(const tinyxml2::XMLElement* layerElement);
 
 	private:
 		MapParser() = default;
