@@ -118,7 +118,7 @@ namespace Modwin
 			     objElem != nullptr;
 			     objElem = objElem->NextSiblingElement("object"))
 			{
-				ParseMapObjects(objElem,tileMap);
+				ParseMapObject(objElem,tileMap);
 			}
 		}
 

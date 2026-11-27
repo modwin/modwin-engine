@@ -62,6 +62,11 @@ namespace Modwin
 			m_Layers.push_back(std::move(layer));
 		}
 
+		void AddObject(MapObject& object)
+		{
+			m_MapObjects.push_back(std::move(object));
+		}
+
 		[[nodiscard]] const TilesetVec& GetTilesets() const noexcept
 		{
 			return m_Tilesets;
