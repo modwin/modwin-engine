@@ -22,9 +22,17 @@ namespace Modwin
 		ProjectContext context;
 		context.assetRoot = GetResourcePath({}).lexically_normal();
 		context.projectRoot = context.assetRoot.parent_path();
-		context.activeMapPath = context.assetRoot / "maps" / "map.tmx";
-		context.musicPath = context.assetRoot / "audio" / "music.tmx";
-		context.soundEffectsPath = context.assetRoot / "audio" / "effects";
+
+		context.mapPath = context.assetRoot / "map";
+		context.spritePath = context.assetRoot / "sprite";
+		context.npcPath = context.spritePath / "npc";
+
+		context.audioPath = context.assetRoot / "audio";
+		context.musicPath = context.audioPath / "tracks" / "forest_ambient.wav";
+		context.soundEffectsPath = context.audioPath / "effects";
+
+		context.monsterPath = context.spritePath / "monster";
+		context.activeMapPath = context.mapPath / "map.tmx";
 		return context;
 	}
 
@@ -41,9 +49,9 @@ namespace Modwin
 		context.activeMapPath = normalizedMapPath.lexically_normal();
 		context.assetRoot = context.activeMapPath.parent_path().parent_path();
 		context.projectRoot =
-			context.assetRoot.filename() == "resources"
-				? context.assetRoot.parent_path()
-				: context.assetRoot;
+				context.assetRoot.filename() == "resources"
+					? context.assetRoot.parent_path()
+					: context.assetRoot;
 		return context;
 	}
 }
