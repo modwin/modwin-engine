@@ -85,6 +85,7 @@ namespace Modwin
 		if (!m_MusicTrack->IsValid())
 		{
 			m_MusicTrack.reset();
+			Log::GetCoreLogger()->error("Music track is invalid.");
 			return false;
 		}
 
@@ -163,6 +164,19 @@ namespace Modwin
 			return false;
 		}
 		m_SoundClips.emplace(soundId, std::move(clip));
+		return clip.IsValid();
+	}
+
+	bool AudioManager::LoadMusic(const std::string& path)
+	{
+		SoundClip clip(path);
+		if (!clip.IsValid())
+		{
+			Log::GetCoreLogger()->error("Music track not found in audio path {}.", path);
+			return false;
+		}
+		m_MusicPath = path;
+		m_MusicTrack = std::make_unique<SoundClip>(std::move(clip));
 		return clip.IsValid();
 	}
 }

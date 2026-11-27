@@ -25,6 +25,7 @@ namespace Modwin
 			void PlaySfx(const std::string& soundId, float volume = 1.0);
 			void SetSfxVolume(float volume);
 			bool LoadSfx(const std::string& soundId, const std::filesystem::path& path);
+			bool LoadMusic(const std::string& path);
 
 		private:
 			SDL_AudioDeviceID m_DeviceId = 0;
