@@ -57,8 +57,6 @@ namespace Modwin
 
 			[[nodiscard]] bool ValidateGameApi(const ModwinGameApi& gameApi) const;
 
-			static ModwinResult ApiSetCameraZoom(void* context, float targetZoom);
-
 			void BuildEngineApi() noexcept;
 
 			bool HandleGameResult(ModwinResult result, const char* operation);
@@ -107,6 +105,7 @@ namespace Modwin
 				uint32_t commandCount) noexcept;
 
 			static ModwinResult ApiSetCameraTarget(void* context, ModwinEntityHandle entity) noexcept;
+			static ModwinResult ApiSetCameraZoom(void* context, float targetZoom);
 
 			ModwinGameApi m_GameApi{};
 			ModwinEngineApi m_EngineApi{};
