@@ -22,7 +22,7 @@ namespace Modwin
 			Sprite(const Sprite&) = delete;
 			Sprite& operator=(const Sprite&) = delete;
 
-			virtual void Update(float deltaSeconds) = 0;
+			virtual void Update(float deltaSeconds, const ModwinEngineApi& engine) = 0;
 			[[nodiscard]] SpriteType GetType() const noexcept { return m_Type; }
 			[[nodiscard]] ModwinEntityHandle GetHandle() const noexcept { return m_Handle; }
 			[[nodiscard]] bool IsPendingDestroy() const noexcept { return m_PendingDestroy; }
