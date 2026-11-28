@@ -75,25 +75,25 @@ namespace Modwin
 	bool AudioManager::PlayMusic(const std::string& path, bool loop)
 	{
 		m_LoopMusic = loop;
-		if (m_MusicPath == path && m_MusicTrack != nullptr)
+		if (m_MusicPath != path || m_MusicTrack == nullptr)
 		{
-			return true;
+			m_MusicPath = path;
+			m_MusicTrack = std::make_unique<SoundClip>(path);
+			if (!m_MusicTrack->IsValid())
+			{
+				m_MusicTrack.reset();
+				Log::GetCoreLogger()->error("Music track is invalid: {}", path);
+				return false;
+			}
 		}
 
-		m_MusicPath = path;
-		m_MusicTrack = std::make_unique<SoundClip>(path);
-
-		if (!m_MusicTrack->IsValid())
+		if (SDL_GetAudioStreamQueued(m_MusicStream) == 0)
 		{
-			m_MusicTrack.reset();
-			Log::GetCoreLogger()->error("Music track is invalid.");
-			return false;
+			SDL_ClearAudioStream(m_MusicStream);
+			SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume);
+			SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr);
+			SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
 		}
-
-		SDL_ClearAudioStream(m_MusicStream);
-		SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume);
-		SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr);
-		SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
 		return true;
 	}
 
