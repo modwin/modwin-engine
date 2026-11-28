@@ -50,10 +50,10 @@ namespace Modwin
 		ProjectContext context;
 		context.activeMapPath = normalizedMapPath.lexically_normal();
 		context.assetRoot = context.activeMapPath.parent_path().parent_path();
-		context.projectRoot =
-				context.assetRoot.filename() == "resources"
-					? context.assetRoot.parent_path()
-					: context.assetRoot;
+		context.projectRoot = context.assetRoot.filename() == "resources"
+			? context.assetRoot.parent_path()
+			: context.assetRoot;
+		PopulateSubPaths(context);
 		return context;
 	}
 }
