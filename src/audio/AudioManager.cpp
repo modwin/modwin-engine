@@ -8,14 +8,21 @@ namespace Modwin
 	bool AudioManager::Init()
 	{
 		m_DeviceId = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
-		if (m_DeviceId == 0)
+		bool error = m_DeviceId == 0;
+		if (error)
 		{
 			Log::GetCoreLogger()->error("Failed to open audio device: {}", SDL_GetError());
 			return false;
 		}
 
 		m_MusicStream = SDL_CreateAudioStream(nullptr, nullptr);
-		SDL_BindAudioStream(m_DeviceId, m_MusicStream);
+		error = !SDL_BindAudioStream(m_DeviceId, m_MusicStream);
+
+		if (error)
+		{
+			Log::GetCoreLogger()->error("Failed to bind audio device with ID {} : {}", m_DeviceId, SDL_GetError());
+			return false;
+		}
 
 		for (std::size_t i = 0; i < MaxSfxChannels; ++i)
 		{
@@ -23,7 +30,13 @@ namespace Modwin
 			SDL_BindAudioStream(m_DeviceId, m_SfxChannels[i]);
 		}
 
-		SDL_ResumeAudioDevice(m_DeviceId);
+		error = !SDL_ResumeAudioDevice(m_DeviceId);
+		if (error)
+		{
+			Log::GetCoreLogger()->error("Failed to resume playback on audio device with ID {} : {}", m_DeviceId, SDL_GetError());
+			return false;
+		}
+
 		return true;
 	}
 
