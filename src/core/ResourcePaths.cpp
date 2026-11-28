@@ -17,22 +17,24 @@ namespace Modwin
 		return std::filesystem::path(basePath) / "resources" / relativePath;
 	}
 
+	static void PopulateSubPaths(ProjectContext& context)
+	{
+		context.mapPath = context.assetRoot / "maps";
+		context.spritePath = context.assetRoot / "sprite";
+		context.npcPath = context.spritePath / "npc";
+		context.monsterPath = context.spritePath / "monster";
+		context.audioPath = context.assetRoot / "audio";
+		context.soundEffectsPath = context.audioPath / "effects";
+		context.musicPath = context.audioPath / "tracks" / "forest_ambient.wav";
+	}
+
 	ProjectContext CreateDefaultProjectContext()
 	{
 		ProjectContext context;
 		context.assetRoot = GetResourcePath({}).lexically_normal();
 		context.projectRoot = context.assetRoot.parent_path();
-
-		context.mapPath = context.assetRoot / "maps";
-		context.spritePath = context.assetRoot / "sprite";
-		context.npcPath = context.spritePath / "npc";
-
-		context.audioPath = context.assetRoot / "audio";
-		context.musicPath = context.audioPath / "tracks" / "forest_ambient.wav";
-		context.soundEffectsPath = context.audioPath / "effects";
-
-		context.monsterPath = context.spritePath / "monster";
-		context.activeMapPath = context.mapPath / "map.tmx";
+		context.activeMapPath = context.assetRoot / "maps" / "map.tmx";
+		PopulateSubPaths(context);
 		return context;
 	}
 
