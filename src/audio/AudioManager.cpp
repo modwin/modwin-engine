@@ -40,6 +40,18 @@ namespace Modwin
 		return true;
 	}
 
+	void AudioManager::Update()
+	{
+		// When SDL_GetAudioStreamAvailable returns low buffer, the SDLAudioStream for music is reassigned.
+		if (m_LoopMusic && m_MusicTrack && m_MusicStream)
+		{
+			if (SDL_GetAudioStreamAvailable(m_MusicStream) < static_cast<int>(m_MusicTrack->GetLength() / 2))
+			{
+				SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+			}
+		}
+	}
+
 	void AudioManager::Shutdown()
 	{
 		if (m_MusicStream)
@@ -65,18 +77,6 @@ namespace Modwin
 		{
 			SDL_CloseAudioDevice(m_DeviceId);
 			m_DeviceId = 0;
-		}
-	}
-
-	void AudioManager::Update()
-	{
-		// When SDL_GetAudioStreamAvailable returns low buffer, the SDLAudioStream for music is reassigned.
-		if (m_LoopMusic && m_MusicTrack && m_MusicStream)
-		{
-			if (SDL_GetAudioStreamAvailable(m_MusicStream) < static_cast<int>(m_MusicTrack->GetLength() / 2))
-			{
-				SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
-			}
 		}
 	}
 
