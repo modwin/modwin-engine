@@ -170,14 +170,14 @@ namespace Modwin
 
 	bool AudioManager::LoadMusic(const std::string& path)
 	{
-		SoundClip clip(path);
-		if (!clip.IsValid())
+		auto clip = std::make_unique<SoundClip>(path);
+		if (!clip->IsValid())
 		{
-			Log::GetCoreLogger()->error("Music track not found in audio path {}.", path);
+			Log::GetCoreLogger()->error("Music track not found at: {}", path);
 			return false;
 		}
 		m_MusicPath = path;
-		m_MusicTrack = std::make_unique<SoundClip>(std::move(clip));
-		return clip.IsValid();
+		m_MusicTrack = std::move(clip);
+		return true;
 	}
 }
