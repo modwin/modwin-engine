@@ -74,6 +74,7 @@ namespace Modwin
 	 */
 	bool AudioManager::PlayMusic(const std::string& path, bool loop)
 	{
+		m_LoopMusic = loop;
 		if (m_MusicPath == path && m_MusicTrack != nullptr)
 		{
 			return true;
