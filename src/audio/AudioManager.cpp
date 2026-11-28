@@ -89,10 +89,13 @@ namespace Modwin
 
 		if (SDL_GetAudioStreamQueued(m_MusicStream) == 0)
 		{
-			SDL_ClearAudioStream(m_MusicStream);
-			SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume);
-			SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr);
-			SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+			bool error = !SDL_ClearAudioStream(m_MusicStream) &&
+			             !SDL_SetAudioStreamGain(m_MusicStream, m_MusicVolume) &&
+			             !SDL_SetAudioStreamFormat(m_MusicStream, &m_MusicTrack->GetSpec(), nullptr) &&
+			             !SDL_PutAudioStreamData(m_MusicStream, m_MusicTrack->GetBuffer(), m_MusicTrack->GetLength());
+
+			if (error) Log::GetCoreLogger()->error(SDL_GetError());
+			else Log::GetCoreLogger()->debug("Successfully loaded the music track with path: {}.", m_MusicPath);
 		}
 		return true;
 	}
@@ -151,10 +154,10 @@ namespace Modwin
 		SDL_PutAudioStreamData(allocStream, clip.GetBuffer(), clip.GetLength());
 	}
 
-    void AudioManager::SetSfxVolume(float volume)
-    {
-        m_SfxVolume = std::clamp(volume, 0.0F, 1.0F);
-    }
+	void AudioManager::SetSfxVolume(float volume)
+	{
+		m_SfxVolume = std::clamp(volume, 0.0F, 1.0F);
+	}
 
 	bool AudioManager::LoadSfx(const std::string& soundId, const std::filesystem::path& path)
 	{

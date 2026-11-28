@@ -67,7 +67,7 @@ namespace Modwin
 		}
 		TextureManager::GetInstance()->SetRenderer(m_Renderer);
 		m_AudioManager.Init();
-		m_AudioManager.LoadMusic(m_ProjectContext.musicPath.string());
+		m_AudioManager.PlayMusic(m_ProjectContext.musicPath.string());
 
 		SDL_SetRenderVSync(m_Renderer, 1);
 
@@ -191,7 +191,6 @@ namespace Modwin
 			UpdateEditMode(frameDeltaSeconds);
 		}
 		m_AudioManager.Update();
-		m_AudioManager.PlayMusic(m_ProjectContext.musicPath.string());
 	}
 
 	void Engine::RenderEditorHighlights(float x, float y)
@@ -655,6 +654,8 @@ namespace Modwin
 		{
 			return;
 		}
+
+		m_AudioManager.PlayMusic(m_ProjectContext.musicPath.string());
 
 		m_FixedStepAccumulator = 0.0F;
 		if (m_EditorState.mode == EditorMode::Play && m_ActiveDocument.has_value())
